@@ -3,304 +3,247 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JuicePOS</title>
+<title>JuicePOS Pro</title>
 
 <style>
-:root{
-  --primary:#006400;
-  --bg:#f4f6f4;
-  --surface:#fff;
-  --tab-h:60px;
+body { font-family: Arial; margin:0; background:#f4f4f4; }
+header { background:#006400; color:white; padding:15px; text-align:center; font-weight:bold; }
+
+.page { display:none; padding:10px; }
+.page.active { display:block; }
+
+.bottom-nav {
+  position:fixed; bottom:0; left:0; right:0;
+  display:flex; background:white; border-top:1px solid #ccc;
+}
+.bottom-nav button {
+  flex:1; padding:10px; border:none; background:none;
+}
+.bottom-nav button.active { color:green; font-weight:bold; }
+
+input { padding:10px; width:100%; margin:5px 0; }
+button { padding:10px; margin:5px 0; }
+
+.cart-item {
+  display:flex; justify-content:space-between;
+  padding:8px; background:white; margin-bottom:5px;
 }
 
-body{margin:0;font-family:sans-serif;background:var(--bg);}
-
-/* PAGES */
-.page{display:none;}
-.page.active{display:flex;flex-direction:column;height:100vh;}
-
-#page-sell{
-  padding-bottom:130px;
-}
-
-/* HEADER */
-.header{
-  padding:10px;
-  background:var(--primary);
-  color:#fff;
-}
-
-/* CART */
-#cart{
-  flex:1;
-  overflow:auto;
-  padding:10px;
-}
-
-.item{
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:8px;
-  background:#fff;
-  padding:8px;
-  border-radius:8px;
-}
-
-/* ACTION BAR */
-#action-bar{
+.action-bar {
   position:fixed;
+  bottom:60px;
   left:0; right:0;
-  bottom:calc(var(--tab-h) + 12px);
-  background:#fff;
+  background:white;
   padding:10px;
   display:flex;
   gap:10px;
-  z-index:999;
-  box-shadow:0 -4px 10px rgba(0,0,0,0.1);
 }
-
-button{
-  flex:1;
-  padding:10px;
-  border:none;
-  border-radius:8px;
-  background:var(--primary);
-  color:#fff;
-  font-weight:bold;
-}
-
-/* NAV */
-.bottom-nav{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  height:var(--tab-h);
-  display:flex;
-  background:#fff;
-  border-top:1px solid #ccc;
-}
-
-.tab{
-  flex:1;
-  text-align:center;
-  padding:10px;
-  font-size:12px;
-}
+.action-bar button { flex:1; }
 </style>
 </head>
 
 <body>
 
+<header>JuicePOS Pro</header>
+
 <!-- LOGIN -->
-<div id="auth">
-  <h2>Login</h2>
-  <input id="user" placeholder="Username"><br><br>
+<div id="loginPage" class="page active">
+  <h3>Login</h3>
+  <input id="username" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
   <button onclick="login()">Login</button>
+  <button onclick="firstSetup()">First Setup</button>
 </div>
 
-<!-- APP -->
-<div id="app" style="display:none;">
+<!-- SETUP -->
+<div id="setupPage" class="page">
+  <h3>Create Admin</h3>
+  <input id="newUser" placeholder="Username">
+  <input id="newPass" type="password" placeholder="Password">
+  <button onclick="createAdmin()">Create</button>
+</div>
 
-<div id="page-sell" class="page active">
-  <div class="header">Sell</div>
+<!-- SELL -->
+<div id="sellPage" class="page">
+  <input id="search" placeholder="Search product..." oninput="searchProduct(this.value)">
+  <div id="searchResults"></div>
 
+  <h3>Cart</h3>
   <div id="cart"></div>
 
-  <div id="action-bar">
+  <div class="action-bar">
     <button onclick="clearCart()">Clear</button>
     <button onclick="cashOut()">Cash Out</button>
     <button onclick="charge()">Charge</button>
   </div>
 </div>
 
-<div id="page-inventory" class="page">
-  <div class="header">Stock</div>
-  <div id="stock-list"></div>
-  <button onclick="addProduct()">+ Add Product</button>
+<!-- STOCK -->
+<div id="stockPage" class="page">
+  <h3>Stock</h3>
+  <input id="pname" placeholder="Product">
+  <input id="pprice" placeholder="Price">
+  <button onclick="addProduct()">Add Product</button>
+  <div id="productList"></div>
 </div>
 
-<div id="page-sales" class="page">
-  <div class="header">Sales</div>
-  <div id="sales-list"></div>
+<!-- SALES -->
+<div id="salesPage" class="page">
+  <h3>Sales</h3>
+  <div id="salesList"></div>
 </div>
 
-<div id="page-banking" class="page">
-  <div class="header">Banking</div>
-  <div id="bank-info"></div>
-</div>
-
-<div id="page-accounting" class="page">
-  <div class="header">Finance</div>
-  <div id="finance"></div>
-</div>
-
-<div id="page-settings" class="page">
-  <div class="header">More</div>
-  <button onclick="logout()">Logout</button>
-</div>
-
+<!-- NAV -->
 <div class="bottom-nav">
-  <div class="tab" onclick="go('sell')">Sell</div>
-  <div class="tab" onclick="go('inventory')">Stock</div>
-  <div class="tab" onclick="go('sales')">Sales</div>
-  <div class="tab" onclick="go('banking')">Banking</div>
-  <div class="tab" onclick="go('accounting')">Finance</div>
-  <div class="tab" onclick="go('settings')">More</div>
-</div>
-
+  <button onclick="nav('sellPage')">Sell</button>
+  <button onclick="nav('stockPage')">Stock</button>
+  <button onclick="nav('salesPage')">Sales</button>
 </div>
 
 <script>
 
-/* STORAGE */
-const DB={
-  get:k=>JSON.parse(localStorage.getItem(k)||"null"),
-  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))
-};
+// STORAGE
+function save(key,val){ localStorage.setItem(key,JSON.stringify(val)) }
+function load(key){ return JSON.parse(localStorage.getItem(key)) }
 
-let APP={
-  user:null,
-  cart:[],
-  products:DB.get('products')||[],
-  sales:DB.get('sales')||[],
-  cash:0
-};
+// STATE
+let users = load("users") || []
+let products = load("products") || []
+let cart = []
+let sales = load("sales") || []
+let currentUser = load("session")
 
-/* LOGIN */
-function login(){
-  const u=document.getElementById('user').value;
-  if(!u)return;
-  APP.user={name:u};
-  DB.set('user',APP.user);
-  boot();
-}
-
-/* BOOT */
-function boot(){
-  const saved=DB.get('user');
-  if(saved){
-    APP.user=saved;
-    document.getElementById('auth').style.display='none';
-    document.getElementById('app').style.display='block';
-    renderAll();
+// AUTO LOGIN
+window.onload = ()=>{
+  if(currentUser){
+    showApp()
   }
 }
 
-/* NAV */
-function go(p){
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-  document.getElementById('page-'+p).classList.add('active');
+// NAVIGATION
+function nav(page){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"))
+  document.getElementById(page).classList.add("active")
 }
 
-/* PRODUCTS */
+// AUTH
+function login(){
+  let u = username.value
+  let p = password.value
+
+  let user = users.find(x=>x.u==u && x.p==p)
+  if(!user) return alert("Invalid")
+
+  currentUser = user
+  save("session", user)
+
+  showApp()
+}
+
+function firstSetup(){
+  nav("setupPage")
+}
+
+function createAdmin(){
+  let u = newUser.value
+  let p = newPass.value
+
+  users.push({u,p})
+  save("users",users)
+
+  alert("Created. Login now")
+  nav("loginPage")
+}
+
+// SHOW APP
+function showApp(){
+  document.getElementById("loginPage").style.display="none"
+  document.getElementById("setupPage").style.display="none"
+  document.getElementById("sellPage").classList.add("active")
+
+  renderProducts()
+  renderCart()
+}
+
+// PRODUCTS
 function addProduct(){
-  const name=prompt("Product name");
-  const price=+prompt("Price");
-  if(!name||!price)return;
-  APP.products.push({name,price});
-  DB.set('products',APP.products);
-  renderStock();
+  let p = {
+    id: Date.now(),
+    name: pname.value,
+    price: parseFloat(pprice.value)
+  }
+
+  products.push(p)
+  save("products",products)
+
+  renderProducts()
 }
 
-/* STOCK */
-function renderStock(){
-  const el=document.getElementById('stock-list');
-  el.innerHTML=APP.products.map(p=>`
-    <div class="item">
-      ${p.name} - GHS ${p.price}
-      <button onclick='addToCart("${p.name}")'>Sell</button>
-    </div>
-  `).join('');
+function renderProducts(){
+  productList.innerHTML = products.map(p=>`
+    <div>${p.name} - ${p.price}</div>
+  `).join("")
 }
 
-/* CART */
-function addToCart(name){
-  const p=APP.products.find(x=>x.name===name);
-  const item=APP.cart.find(x=>x.name===name);
-  if(item){item.qty++}else{APP.cart.push({...p,qty:1})}
-  renderCart();
+// SEARCH + SELL
+function searchProduct(q){
+  let result = products.filter(p=>p.name.toLowerCase().includes(q.toLowerCase()))
+
+  searchResults.innerHTML = result.map(p=>`
+    <div onclick="addToCart(${p.id})">${p.name} - ${p.price}</div>
+  `).join("")
+}
+
+function addToCart(id){
+  let p = products.find(x=>x.id==id)
+
+  let existing = cart.find(c=>c.id==id)
+  if(existing) existing.qty++
+  else cart.push({...p, qty:1})
+
+  renderCart()
 }
 
 function renderCart(){
-  const el=document.getElementById('cart');
-  let total=0;
+  cartEl = document.getElementById("cart")
 
-  el.innerHTML=APP.cart.map(i=>{
-    total+=i.price*i.qty;
-    return `<div class="item">${i.name} x${i.qty} - ${i.price*i.qty}</div>`;
-  }).join('') + `<h3>Total: GHS ${total}</h3>`;
+  cartEl.innerHTML = cart.map(c=>`
+    <div class="cart-item">
+      ${c.name} x${c.qty}
+      <span>${c.price * c.qty}</span>
+    </div>
+  `).join("")
 }
 
-/* CLEAR */
+// ACTIONS
 function clearCart(){
-  APP.cart=[];
-  renderCart();
+  cart=[]
+  renderCart()
 }
 
-/* CHARGE */
 function charge(){
-  let total=APP.cart.reduce((t,i)=>t+i.price*i.qty,0);
-  if(!total)return alert("No items");
+  if(!cart.length) return alert("Empty")
 
-  APP.sales.push({
-    items:APP.cart,
-    total,
-    user:APP.user.name,
-    date:new Date().toLocaleString()
-  });
+  sales.push({items:cart, date:new Date()})
+  save("sales",sales)
 
-  DB.set('sales',APP.sales);
-  APP.cash+=total;
+  cart=[]
+  renderCart()
+  renderSales()
 
-  whatsappReceipt(total);
-
-  clearCart();
-  renderSales();
+  alert("Sale complete")
 }
 
-/* CASH OUT + FRAUD CHECK */
 function cashOut(){
-  const actual=+prompt("Enter actual cash in hand");
-  if(!actual)return;
-
-  if(actual!==APP.cash){
-    alert("⚠️ Cash mismatch detected!");
-  }else{
-    alert("Cash balanced");
-  }
-
-  APP.cash=0;
+  alert("Cash out recorded")
 }
 
-/* SALES */
+// SALES
 function renderSales(){
-  const el=document.getElementById('sales-list');
-  el.innerHTML=APP.sales.map(s=>`
-    <div class="item">${s.date} - ${s.total}</div>
-  `).join('');
+  salesList.innerHTML = sales.map(s=>`
+    <div>${s.items.length} items - ${new Date(s.date).toLocaleString()}</div>
+  `).join("")
 }
-
-/* WHATSAPP RECEIPT */
-function whatsappReceipt(total){
-  const msg=`Receipt\nTotal: GHS ${total}`;
-  const url=`https://wa.me/?text=${encodeURIComponent(msg)}`;
-  window.open(url);
-}
-
-/* INIT */
-function renderAll(){
-  renderStock();
-  renderCart();
-  renderSales();
-}
-
-function logout(){
-  localStorage.clear();
-  location.reload();
-}
-
-window.onload=boot;
 
 </script>
 
