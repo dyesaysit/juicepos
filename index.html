@@ -2,43 +2,71 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#006400">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JuicePOS</title>
 
 <style>
 :root{
   --primary:#006400;
-  --bg:#f0f4f0;
-  --surface:#ffffff;
-  --border:#d0e0d0;
-  --text:#1a2e1a;
-  --danger:#c0392b;
-  --warning:#e67e22;
-  --radius:12px;
+  --bg:#f4f6f4;
+  --surface:#fff;
   --tab-h:60px;
 }
 
 body{margin:0;font-family:sans-serif;background:var(--bg);}
 
+/* PAGES */
 .page{display:none;}
 .page.active{display:flex;flex-direction:column;height:100vh;}
 
-/* FIXED SELL PAGE */
 #page-sell{
   padding-bottom:130px;
 }
 
-/* ACTION BAR FIX */
-#sell-action-bar{
+/* HEADER */
+.header{
+  padding:10px;
+  background:var(--primary);
+  color:#fff;
+}
+
+/* CART */
+#cart{
+  flex:1;
+  overflow:auto;
+  padding:10px;
+}
+
+.item{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:8px;
+  background:#fff;
+  padding:8px;
+  border-radius:8px;
+}
+
+/* ACTION BAR */
+#action-bar{
   position:fixed;
-  left:0;
-  right:0;
+  left:0; right:0;
   bottom:calc(var(--tab-h) + 12px);
   background:#fff;
   padding:10px;
+  display:flex;
+  gap:10px;
   z-index:999;
-  box-shadow:0 -4px 12px rgba(0,0,0,0.1);
+  box-shadow:0 -4px 10px rgba(0,0,0,0.1);
+}
+
+button{
+  flex:1;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:var(--primary);
+  color:#fff;
+  font-weight:bold;
 }
 
 /* NAV */
@@ -48,31 +76,16 @@ body{margin:0;font-family:sans-serif;background:var(--bg);}
   left:0;
   right:0;
   height:var(--tab-h);
-  background:#fff;
   display:flex;
+  background:#fff;
   border-top:1px solid #ccc;
-  z-index:100;
 }
 
-.tab-item{
+.tab{
   flex:1;
   text-align:center;
   padding:10px;
   font-size:12px;
-}
-
-/* CART */
-#live-cart-items{
-  flex:1;
-  overflow:auto;
-  padding:10px;
-}
-
-button{
-  border:none;
-  border-radius:8px;
-  padding:10px;
-  font-weight:bold;
 }
 </style>
 </head>
@@ -80,46 +93,60 @@ button{
 <body>
 
 <!-- LOGIN -->
-<div id="auth-screen">
+<div id="auth">
   <h2>Login</h2>
-  <input id="login-username" placeholder="Username"><br><br>
-  <input id="login-password" type="password" placeholder="Password"><br><br>
-  <button onclick="handleLogin()">Login</button>
+  <input id="user" placeholder="Username"><br><br>
+  <button onclick="login()">Login</button>
 </div>
 
-<!-- MAIN -->
-<div id="main-app" style="display:none;">
+<!-- APP -->
+<div id="app" style="display:none;">
 
 <div id="page-sell" class="page active">
+  <div class="header">Sell</div>
 
-  <h3 style="padding:10px;">Sell</h3>
+  <div id="cart"></div>
 
-  <div id="live-cart-items"></div>
-
-  <!-- ACTION BAR -->
-  <div id="sell-action-bar">
-    <button onclick="clearCart()">🗑</button>
-    <button onclick="openCashOut()">💸 Cash Out</button>
-    <button onclick="openCartPayment()">✅ Charge</button>
+  <div id="action-bar">
+    <button onclick="clearCart()">Clear</button>
+    <button onclick="cashOut()">Cash Out</button>
+    <button onclick="charge()">Charge</button>
   </div>
-
 </div>
 
-<!-- OTHER PAGES -->
-<div id="page-inventory" class="page"><h3>Inventory</h3></div>
-<div id="page-sales" class="page"><h3>Sales</h3></div>
-<div id="page-banking" class="page"><h3>Banking</h3></div>
-<div id="page-accounting" class="page"><h3>Finance</h3></div>
-<div id="page-settings" class="page"><h3>Settings</h3></div>
+<div id="page-inventory" class="page">
+  <div class="header">Stock</div>
+  <div id="stock-list"></div>
+  <button onclick="addProduct()">+ Add Product</button>
+</div>
 
-<!-- NAV -->
+<div id="page-sales" class="page">
+  <div class="header">Sales</div>
+  <div id="sales-list"></div>
+</div>
+
+<div id="page-banking" class="page">
+  <div class="header">Banking</div>
+  <div id="bank-info"></div>
+</div>
+
+<div id="page-accounting" class="page">
+  <div class="header">Finance</div>
+  <div id="finance"></div>
+</div>
+
+<div id="page-settings" class="page">
+  <div class="header">More</div>
+  <button onclick="logout()">Logout</button>
+</div>
+
 <div class="bottom-nav">
-  <div class="tab-item" onclick="go('sell')">Sell</div>
-  <div class="tab-item" onclick="go('inventory')">Stock</div>
-  <div class="tab-item" onclick="go('sales')">Sales</div>
-  <div class="tab-item" onclick="go('banking')">Banking</div>
-  <div class="tab-item" onclick="go('accounting')">Finance</div>
-  <div class="tab-item" onclick="go('settings')">More</div>
+  <div class="tab" onclick="go('sell')">Sell</div>
+  <div class="tab" onclick="go('inventory')">Stock</div>
+  <div class="tab" onclick="go('sales')">Sales</div>
+  <div class="tab" onclick="go('banking')">Banking</div>
+  <div class="tab" onclick="go('accounting')">Finance</div>
+  <div class="tab" onclick="go('settings')">More</div>
 </div>
 
 </div>
@@ -127,67 +154,153 @@ button{
 <script>
 
 /* STORAGE */
-const DB = {
-  get:k=>JSON.parse(localStorage.getItem(k)),
+const DB={
+  get:k=>JSON.parse(localStorage.getItem(k)||"null"),
   set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))
 };
 
-let APP = {
-  currentUser:null,
-  cart:[]
+let APP={
+  user:null,
+  cart:[],
+  products:DB.get('products')||[],
+  sales:DB.get('sales')||[],
+  cash:0
 };
 
-/* BOOT FIX */
-function bootApp(){
-  const savedUser = DB.get('user');
-
-  if(savedUser){
-    APP.currentUser = savedUser;
-    document.getElementById('auth-screen').style.display='none';
-    document.getElementById('main-app').style.display='block';
-  }
+/* LOGIN */
+function login(){
+  const u=document.getElementById('user').value;
+  if(!u)return;
+  APP.user={name:u};
+  DB.set('user',APP.user);
+  boot();
 }
 
-/* LOGIN FIX */
-function handleLogin(){
-  const u = document.getElementById('login-username').value;
-  const p = document.getElementById('login-password').value;
-
-  if(u && p){
-    const user = {username:u};
-    APP.currentUser = user;
-    DB.set('user', user);
-
-    document.getElementById('auth-screen').style.display='none';
-    document.getElementById('main-app').style.display='block';
+/* BOOT */
+function boot(){
+  const saved=DB.get('user');
+  if(saved){
+    APP.user=saved;
+    document.getElementById('auth').style.display='none';
+    document.getElementById('app').style.display='block';
+    renderAll();
   }
 }
 
 /* NAV */
-function go(page){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById('page-'+page).classList.add('active');
+function go(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+}
+
+/* PRODUCTS */
+function addProduct(){
+  const name=prompt("Product name");
+  const price=+prompt("Price");
+  if(!name||!price)return;
+  APP.products.push({name,price});
+  DB.set('products',APP.products);
+  renderStock();
+}
+
+/* STOCK */
+function renderStock(){
+  const el=document.getElementById('stock-list');
+  el.innerHTML=APP.products.map(p=>`
+    <div class="item">
+      ${p.name} - GHS ${p.price}
+      <button onclick='addToCart("${p.name}")'>Sell</button>
+    </div>
+  `).join('');
 }
 
 /* CART */
+function addToCart(name){
+  const p=APP.products.find(x=>x.name===name);
+  const item=APP.cart.find(x=>x.name===name);
+  if(item){item.qty++}else{APP.cart.push({...p,qty:1})}
+  renderCart();
+}
+
+function renderCart(){
+  const el=document.getElementById('cart');
+  let total=0;
+
+  el.innerHTML=APP.cart.map(i=>{
+    total+=i.price*i.qty;
+    return `<div class="item">${i.name} x${i.qty} - ${i.price*i.qty}</div>`;
+  }).join('') + `<h3>Total: GHS ${total}</h3>`;
+}
+
+/* CLEAR */
 function clearCart(){
   APP.cart=[];
   renderCart();
 }
 
-function openCashOut(){ alert("Cash Out"); }
-function openCartPayment(){ alert("Charge"); }
+/* CHARGE */
+function charge(){
+  let total=APP.cart.reduce((t,i)=>t+i.price*i.qty,0);
+  if(!total)return alert("No items");
 
-function renderCart(){
-  const el = document.getElementById('live-cart-items');
-  if(!APP.cart.length){
-    el.innerHTML="No items";
-    return;
+  APP.sales.push({
+    items:APP.cart,
+    total,
+    user:APP.user.name,
+    date:new Date().toLocaleString()
+  });
+
+  DB.set('sales',APP.sales);
+  APP.cash+=total;
+
+  whatsappReceipt(total);
+
+  clearCart();
+  renderSales();
+}
+
+/* CASH OUT + FRAUD CHECK */
+function cashOut(){
+  const actual=+prompt("Enter actual cash in hand");
+  if(!actual)return;
+
+  if(actual!==APP.cash){
+    alert("⚠️ Cash mismatch detected!");
+  }else{
+    alert("Cash balanced");
   }
+
+  APP.cash=0;
+}
+
+/* SALES */
+function renderSales(){
+  const el=document.getElementById('sales-list');
+  el.innerHTML=APP.sales.map(s=>`
+    <div class="item">${s.date} - ${s.total}</div>
+  `).join('');
+}
+
+/* WHATSAPP RECEIPT */
+function whatsappReceipt(total){
+  const msg=`Receipt\nTotal: GHS ${total}`;
+  const url=`https://wa.me/?text=${encodeURIComponent(msg)}`;
+  window.open(url);
 }
 
 /* INIT */
-window.onload = bootApp;
+function renderAll(){
+  renderStock();
+  renderCart();
+  renderSales();
+}
+
+function logout(){
+  localStorage.clear();
+  location.reload();
+}
+
+window.onload=boot;
 
 </script>
 
