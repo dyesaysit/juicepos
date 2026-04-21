@@ -1,89 +1,77 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JuicePOS Pro</title>
-
-<link rel="manifest" href="manifest.json">
-
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
-}
-</script>
-
-<style>
-body { font-family: Arial; margin:0; background:#f4f4f4;}
-header { background:green; color:white; padding:15px; text-align:center;}
-.container { padding:15px;}
-button { padding:10px; margin:5px; background:green; color:white; border:none; border-radius:5px;}
-input { padding:10px; margin:5px;}
-.hidden { display:none;}
-.card { background:white; padding:15px; margin:10px 0; border-radius:8px;}
-</style>
+  <title>JuicePOS Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial; margin:0; background:#f2f2f2; }
+    header { background:green; color:#fff; padding:15px; text-align:center; }
+    input, button { padding:10px; margin:5px; }
+    button { background:green; color:white; border:none; }
+    .hidden { display:none; }
+    nav button { margin:5px; }
+  </style>
 </head>
 
 <body>
 
 <header>JuicePOS Pro</header>
 
-<div class="container">
-
 <!-- LOGIN -->
 <div id="login">
-<h3>Login</h3>
-<input id="username" placeholder="Username">
-<input id="password" placeholder="Password" type="password">
-<button onclick="login()">Login</button>
-<button onclick="showSetup()">First Setup</button>
+  <h2>Login</h2>
+  <input id="username" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="loginUser()">Login</button>
+  <button onclick="showSetup()">First Setup</button>
 </div>
 
 <!-- SETUP -->
 <div id="setup" class="hidden">
-<h3>Setup Admin</h3>
-<input id="newUser" placeholder="Admin Username">
-<input id="newPass" placeholder="Password" type="password">
-<button onclick="createAdmin()">Create Admin</button>
+  <h2>Create Admin</h2>
+  <input id="newUser" placeholder="Username">
+  <input id="newPass" type="password" placeholder="Password">
+  <button onclick="createAdmin()">Create Admin</button>
 </div>
 
-<!-- MAIN -->
+<!-- APP -->
 <div id="app" class="hidden">
 
-<button onclick="showPage('sales')">Sales</button>
-<button onclick="showPage('banking')">Banking</button>
-<button onclick="showPage('reports')">Reports</button>
-<button onclick="logout()">Logout</button>
+  <nav>
+    <button onclick="showPage('sales')">Sales</button>
+    <button onclick="showPage('banking')">Banking</button>
+    <button onclick="showPage('reports')">Reports</button>
+    <button onclick="logout()">Logout</button>
+  </nav>
 
-<!-- SALES -->
-<div id="sales">
-<h3>Sales</h3>
-<input id="product" placeholder="Product">
-<input id="price" placeholder="Price" type="number">
-<button onclick="addItem()">Add</button>
+  <!-- SALES -->
+  <div id="sales">
+    <h2>Sales</h2>
+    <input id="product" placeholder="Product name">
+    <input id="price" type="number" placeholder="Price">
+    <button onclick="addItem()">Add</button>
 
-<ul id="list"></ul>
-<h3>Total: GMD <span id="total">0</span></h3>
+    <ul id="list"></ul>
 
-<button onclick="checkout()">Checkout</button>
-</div>
+    <h3>Total: GMD <span id="total">0</span></h3>
+    <button onclick="checkout()">Checkout</button>
+  </div>
 
-<!-- BANKING -->
-<div id="banking" class="hidden">
-<h3>Banking</h3>
-<p>Cash: <span id="cashTotal">0</span></p>
-<p>Wave: <span id="waveTotal">0</span></p>
-<p>Transfer: <span id="bankTotal">0</span></p>
-</div>
+  <!-- BANKING -->
+  <div id="banking" class="hidden">
+    <h2>Banking</h2>
+    <p>Cash: GMD <span id="cashTotal">0</span></p>
+    <p>Wave: GMD <span id="waveTotal">0</span></p>
+    <p>Bank: GMD <span id="bankTotal">0</span></p>
+  </div>
 
-<!-- REPORTS -->
-<div id="reports" class="hidden">
-<h3>Reports</h3>
-<p>Total Sales: <span id="reportTotal">0</span></p>
-<p id="fraud"></p>
-</div>
+  <!-- REPORTS -->
+  <div id="reports" class="hidden">
+    <h2>Reports</h2>
+    <p>Total Today: GMD <span id="reportTotal">0</span></p>
+    <p id="fraud"></p>
+  </div>
 
-</div>
 </div>
 
 <script>
@@ -92,48 +80,49 @@ input { padding:10px; margin:5px;}
 let users = JSON.parse(localStorage.getItem('users') || '[]');
 let currentUser = null;
 let cart = [];
+
 let totals = JSON.parse(localStorage.getItem('totals') || '{"cash":0,"wave":0,"bank":0}');
+let salesLog = JSON.parse(localStorage.getItem('salesLog') || '[]');
 
-// INIT DISPLAY
-updateBanking();
-updateReports();
+// DATE
+function today(){
+  return new Date().toISOString().split('T')[0];
+}
 
-// UI FUNCTIONS
+// LOGIN
 function showSetup(){
   document.getElementById('setup').classList.remove('hidden');
 }
 
 function createAdmin(){
-  let u = document.getElementById('newUser').value.trim();
-  let p = document.getElementById('newPass').value.trim();
+  let u = newUser.value.trim();
+  let p = newPass.value.trim();
 
   if(!u || !p){
     alert("Enter username and password");
     return;
   }
 
-  users.push({u,p,role:'admin'});
+  users.push({u,p});
   localStorage.setItem('users', JSON.stringify(users));
 
-  alert('Admin created');
-
-  document.getElementById('setup').classList.add('hidden');
+  alert("Admin created. Now login.");
 }
 
-function login(){
-  let u = document.getElementById('username').value.trim();
-  let p = document.getElementById('password').value.trim();
+function loginUser(){
+  let u = username.value.trim();
+  let p = password.value.trim();
 
   let user = users.find(x => x.u === u && x.p === p);
 
   if(user){
     currentUser = user;
-
     document.getElementById('login').style.display = 'none';
     document.getElementById('app').classList.remove('hidden');
-
+    updateBanking();
+    updateReports();
   } else {
-    alert('Invalid login');
+    alert("Invalid login");
   }
 }
 
@@ -141,6 +130,7 @@ function logout(){
   location.reload();
 }
 
+// NAV
 function showPage(page){
   document.getElementById('sales').classList.add('hidden');
   document.getElementById('banking').classList.add('hidden');
@@ -151,27 +141,26 @@ function showPage(page){
 
 // SALES
 function addItem(){
-  let p = document.getElementById('product').value.trim();
-  let pr = Number(document.getElementById('price').value);
+  let p = product.value.trim();
+  let pr = Number(price.value);
 
   if(!p || pr <= 0){
-    alert("Enter valid product and price");
+    alert("Enter valid data");
     return;
   }
 
   cart.push({p, pr});
+  list.innerHTML += `<li>${p} - ${pr}</li>`;
 
-  document.getElementById('list').innerHTML += `<li>${p} - ${pr}</li>`;
-
-  document.getElementById('product').value = '';
-  document.getElementById('price').value = '';
+  product.value = '';
+  price.value = '';
 
   updateTotal();
 }
 
 function updateTotal(){
   let t = cart.reduce((a,b)=>a+b.pr,0);
-  document.getElementById('total').innerText = t;
+  total.innerText = t;
 }
 
 // CHECKOUT
@@ -181,51 +170,71 @@ function checkout(){
     return;
   }
 
-  let method = prompt("Payment? cash / wave / bank");
-
+  let method = prompt("cash / wave / bank");
   if(!method) return;
 
   method = method.toLowerCase();
 
   let t = cart.reduce((a,b)=>a+b.pr,0);
+  let actualCash = null;
 
-  if(method === 'cash') totals.cash += t;
-  else if(method === 'wave') totals.wave += t;
-  else if(method === 'bank') totals.bank += t;
-  else {
+  if(method === 'cash'){
+    actualCash = Number(prompt("Enter physical cash"));
+    if(isNaN(actualCash)) return;
+    totals.cash += t;
+  }
+  else if(method === 'wave'){
+    totals.wave += t;
+  }
+  else if(method === 'bank'){
+    totals.bank += t;
+  }
+  else{
     alert("Invalid method");
     return;
   }
 
+  salesLog.push({
+    date: today(),
+    user: currentUser.u,
+    total: t,
+    method,
+    expectedCash: method === 'cash' ? t : 0,
+    actualCash
+  });
+
+  localStorage.setItem('salesLog', JSON.stringify(salesLog));
   localStorage.setItem('totals', JSON.stringify(totals));
 
   cart = [];
-  document.getElementById('list').innerHTML = '';
-  document.getElementById('total').innerText = 0;
+  list.innerHTML = '';
+  total.innerText = 0;
 
   updateBanking();
   updateReports();
 
-  alert('Sale saved');
+  alert("Sale saved");
 }
 
-// UPDATE UI
+// BANKING
 function updateBanking(){
-  document.getElementById('cashTotal').innerText = totals.cash;
-  document.getElementById('waveTotal').innerText = totals.wave;
-  document.getElementById('bankTotal').innerText = totals.bank;
+  cashTotal.innerText = totals.cash;
+  waveTotal.innerText = totals.wave;
+  bankTotal.innerText = totals.bank;
 }
 
+// REPORTS
 function updateReports(){
-  let total = totals.cash + totals.wave + totals.bank;
+  let totalAll = totals.cash + totals.wave + totals.bank;
+  reportTotal.innerText = totalAll;
 
-  document.getElementById('reportTotal').innerText = total;
+  let todaySales = salesLog.filter(s => s.date === today());
 
-  if(totals.cash < 0){
-    document.getElementById('fraud').innerText = "⚠️ Cash mismatch!";
-  } else {
-    document.getElementById('fraud').innerText = "";
-  }
+  let fraud = todaySales.some(s =>
+    s.method === 'cash' && s.actualCash < s.expectedCash
+  );
+
+  fraud.innerText = fraud ? "⚠️ Cash mismatch detected!" : "";
 }
 
 </script>
