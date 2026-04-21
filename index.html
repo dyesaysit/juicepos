@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JuicePOS Pro</title>
+<title>JuicePOS Enterprise</title>
 
 <style>
 body { font-family: Arial; margin:0; background:#f4f4f4; }
@@ -39,17 +39,13 @@ button { padding:10px; margin:5px 0; }
   gap:10px;
 }
 
-.total {
-  font-size:20px;
-  font-weight:bold;
-  margin-top:10px;
-}
+.total { font-size:20px; font-weight:bold; margin-top:10px; }
 </style>
 </head>
 
 <body>
 
-<header>JuicePOS Pro</header>
+<header>JuicePOS Enterprise (GMD)</header>
 
 <!-- LOGIN -->
 <div id="loginPage" class="page active">
@@ -61,20 +57,20 @@ button { padding:10px; margin:5px 0; }
 
 <!-- SETUP -->
 <div id="setupPage" class="page">
-  <input id="newUser" placeholder="Username">
+  <input id="newUser" placeholder="Admin Username">
   <input id="newPass" type="password" placeholder="Password">
   <button onclick="createAdmin()">Create Admin</button>
 </div>
 
 <!-- SELL -->
 <div id="sellPage" class="page">
-  <input id="search" placeholder="Search..." oninput="searchProduct(this.value)">
+  <input id="search" placeholder="Search product..." oninput="searchProduct(this.value)">
   <div id="searchResults"></div>
 
   <h3>Cart</h3>
   <div id="cart"></div>
 
-  <div class="total">Total: GHS <span id="total">0</span></div>
+  <div class="total">Total: GMD <span id="total">0</span></div>
 
   <div class="action-bar">
     <button onclick="clearCart()">Clear</button>
@@ -85,9 +81,13 @@ button { padding:10px; margin:5px 0; }
 
 <!-- STOCK -->
 <div id="stockPage" class="page">
+  <h3>Add Product</h3>
   <input id="pname" placeholder="Product">
   <input id="pprice" placeholder="Price">
+  <input id="pqty" placeholder="Quantity">
   <button onclick="addProduct()">Add</button>
+
+  <h3>Inventory</h3>
   <div id="productList"></div>
 </div>
 
@@ -123,7 +123,7 @@ let cart = []
 let sales = load("sales")||[]
 let session = load("session")
 
-// AUTO LOGIN
+// INIT
 window.onload = ()=>{
   if(session) showApp()
 }
@@ -132,15 +132,13 @@ window.onload = ()=>{
 function nav(p){
   document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"))
   document.getElementById(p).classList.add("active")
-
   if(p==="salesPage") renderSales()
 }
 
 // AUTH
 function login(){
-  let u=username.value, p=password.value
-  let user=users.find(x=>x.u==u&&x.p==p)
-  if(!user) return alert("Invalid")
+  let user=users.find(x=>x.u==username.value && x.p==password.value)
+  if(!user) return alert("Invalid login")
 
   session=user
   save("session",user)
@@ -150,9 +148,9 @@ function login(){
 function firstSetup(){ nav("setupPage") }
 
 function createAdmin(){
-  users.push({u:newUser.value,p:newPass.value})
+  users.push({u:newUser.value,p:newPass.value,role:"admin"})
   save("users",users)
-  alert("Created")
+  alert("Admin created")
   nav("loginPage")
 }
 
@@ -169,7 +167,8 @@ function addProduct(){
   products.push({
     id:Date.now(),
     name:pname.value,
-    price:+pprice.value
+    price:+pprice.value,
+    qty:+pqty.value
   })
   save("products",products)
   renderProducts()
@@ -177,7 +176,7 @@ function addProduct(){
 
 function renderProducts(){
   productList.innerHTML=products.map(p=>`
-    <div>${p.name} - ${p.price}</div>
+    <div>${p.name} - GMD ${p.price} (Stock: ${p.qty})</div>
   `).join("")
 }
 
@@ -185,15 +184,20 @@ function renderProducts(){
 function searchProduct(q){
   let r=products.filter(p=>p.name.toLowerCase().includes(q.toLowerCase()))
   searchResults.innerHTML=r.map(p=>`
-    <div onclick="addToCart(${p.id})">${p.name} - ${p.price}</div>
+    <div onclick="addToCart(${p.id})">
+      ${p.name} - GMD ${p.price} (${p.qty} left)
+    </div>
   `).join("")
 }
 
 // CART
 function addToCart(id){
   let p=products.find(x=>x.id==id)
+  if(p.qty<=0) return alert("Out of stock")
+
   let e=cart.find(c=>c.id==id)
   e?e.qty++:cart.push({...p,qty:1})
+
   renderCart()
 }
 
@@ -212,11 +216,21 @@ function renderCart(){
 function clearCart(){ cart=[]; renderCart() }
 
 function charge(){
-  if(!cart.length) return alert("Empty")
+  if(!cart.length) return alert("Empty cart")
+
+  let totalAmount=cart.reduce((s,i)=>s+i.qty*i.price,0)
+
+  // deduct stock
+  cart.forEach(c=>{
+    let p=products.find(x=>x.id==c.id)
+    p.qty-=c.qty
+  })
+
+  save("products",products)
 
   let sale={
     items:cart,
-    total:cart.reduce((s,i)=>s+i.qty*i.price,0),
+    total:totalAmount,
     user:session.u,
     date:new Date()
   }
@@ -228,57 +242,54 @@ function charge(){
 
   cart=[]
   renderCart()
+  renderProducts()
 }
 
-// WHATSAPP RECEIPT
+// RECEIPT
 function generateReceipt(sale){
-  let text=`Receipt\n\n`
+  let text=`JuicePOS Receipt\n\n`
   sale.items.forEach(i=>{
-    text+=`${i.name} x${i.qty} = ${i.qty*i.price}\n`
+    text+=`${i.name} x${i.qty} = GMD ${i.qty*i.price}\n`
   })
-  text+=`\nTotal: ${sale.total}`
+  text+=`\nTotal: GMD ${sale.total}`
 
-  let url="https://wa.me/?text="+encodeURIComponent(text)
-  window.open(url)
+  window.open("https://wa.me/?text="+encodeURIComponent(text))
 }
 
 // SALES + REPORT
 function renderSales(){
   salesList.innerHTML=sales.map(s=>`
-    <div>${s.user} - ${s.total}</div>
+    <div>${s.user} - GMD ${s.total}</div>
   `).join("")
 
   let today=new Date().toDateString()
 
-  let userSales=sales.filter(s=>
-    new Date(s.date).toDateString()==today &&
-    s.user==session.u
-  )
+  let todaySales=sales.filter(s=>new Date(s.date).toDateString()==today)
 
-  let total=userSales.reduce((s,i)=>s+i.total,0)
+  let total=todaySales.reduce((s,i)=>s+i.total,0)
 
-  report.innerHTML=`Today Total: ${total}`
+  report.innerHTML=`Today Total: GMD ${total}`
 }
 
-// FRAUD CHECK
+// FRAUD
 function checkFraud(){
   let actual=+actualCash.value
-
   let today=new Date().toDateString()
+
   let expected=sales
     .filter(s=>new Date(s.date).toDateString()==today)
     .reduce((s,i)=>s+i.total,0)
 
   if(actual!==expected){
-    alert("⚠️ Mismatch! Expected: "+expected+" Got: "+actual)
+    alert(`⚠️ Mismatch! Expected GMD ${expected}, Got GMD ${actual}`)
   } else {
-    alert("Cash OK")
+    alert("Cash Balanced")
   }
 }
 
 // CASH OUT
 function cashOut(){
-  alert("Cash removed recorded")
+  alert("Cash out recorded")
 }
 
 </script>
