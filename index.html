@@ -6,6 +6,7 @@
 <title>JuicePOS Pro</title>
 
 <link rel="manifest" href="manifest.json">
+
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
@@ -83,37 +84,57 @@ input { padding:10px; margin:5px;}
 </div>
 
 </div>
-
 </div>
 
 <script>
 
-let users = JSON.parse(localStorage.getItem('users')||'[]');
+// STORAGE
+let users = JSON.parse(localStorage.getItem('users') || '[]');
 let currentUser = null;
 let cart = [];
-let totals = JSON.parse(localStorage.getItem('totals')||'{"cash":0,"wave":0,"bank":0}');
+let totals = JSON.parse(localStorage.getItem('totals') || '{"cash":0,"wave":0,"bank":0}');
 
+// INIT DISPLAY
+updateBanking();
+updateReports();
+
+// UI FUNCTIONS
 function showSetup(){
   document.getElementById('setup').classList.remove('hidden');
 }
 
 function createAdmin(){
-  let u = newUser.value;
-  let p = newPass.value;
+  let u = document.getElementById('newUser').value.trim();
+  let p = document.getElementById('newPass').value.trim();
+
+  if(!u || !p){
+    alert("Enter username and password");
+    return;
+  }
+
   users.push({u,p,role:'admin'});
-  localStorage.setItem('users',JSON.stringify(users));
+  localStorage.setItem('users', JSON.stringify(users));
+
   alert('Admin created');
+
+  document.getElementById('setup').classList.add('hidden');
 }
 
 function login(){
-  let u = username.value;
-  let p = password.value;
-  let user = users.find(x=>x.u==u && x.p==p);
+  let u = document.getElementById('username').value.trim();
+  let p = document.getElementById('password').value.trim();
+
+  let user = users.find(x => x.u === u && x.p === p);
+
   if(user){
-    currentUser=user;
-    document.getElementById('login').style.display='none';
+    currentUser = user;
+
+    document.getElementById('login').style.display = 'none';
     document.getElementById('app').classList.remove('hidden');
-  } else alert('Invalid login');
+
+  } else {
+    alert('Invalid login');
+  }
 }
 
 function logout(){
@@ -121,46 +142,90 @@ function logout(){
 }
 
 function showPage(page){
-  sales.classList.add('hidden');
-  banking.classList.add('hidden');
-  reports.classList.add('hidden');
+  document.getElementById('sales').classList.add('hidden');
+  document.getElementById('banking').classList.add('hidden');
+  document.getElementById('reports').classList.add('hidden');
+
   document.getElementById(page).classList.remove('hidden');
 }
 
+// SALES
 function addItem(){
-  let p = product.value;
-  let pr = Number(price.value);
-  cart.push({p,pr});
-  list.innerHTML += `<li>${p} - ${pr}</li>`;
+  let p = document.getElementById('product').value.trim();
+  let pr = Number(document.getElementById('price').value);
+
+  if(!p || pr <= 0){
+    alert("Enter valid product and price");
+    return;
+  }
+
+  cart.push({p, pr});
+
+  document.getElementById('list').innerHTML += `<li>${p} - ${pr}</li>`;
+
+  document.getElementById('product').value = '';
+  document.getElementById('price').value = '';
+
   updateTotal();
 }
 
 function updateTotal(){
   let t = cart.reduce((a,b)=>a+b.pr,0);
-  total.innerText=t;
+  document.getElementById('total').innerText = t;
 }
 
+// CHECKOUT
 function checkout(){
-  let method = prompt("Payment? cash/wave/bank");
-  let t = cart.reduce((a,b)=>a+b.pr,0);
-
-  if(method=='cash') totals.cash+=t;
-  if(method=='wave') totals.wave+=t;
-  if(method=='bank') totals.bank+=t;
-
-  localStorage.setItem('totals',JSON.stringify(totals));
-
-  reportTotal.innerText = totals.cash+totals.wave+totals.bank;
-
-  if(totals.cash < 0){
-    fraud.innerText="⚠️ Cash mismatch!";
+  if(cart.length === 0){
+    alert("No items");
+    return;
   }
 
-  cart=[];
-  list.innerHTML='';
-  total.innerText=0;
+  let method = prompt("Payment? cash / wave / bank");
 
-  alert('Saved');
+  if(!method) return;
+
+  method = method.toLowerCase();
+
+  let t = cart.reduce((a,b)=>a+b.pr,0);
+
+  if(method === 'cash') totals.cash += t;
+  else if(method === 'wave') totals.wave += t;
+  else if(method === 'bank') totals.bank += t;
+  else {
+    alert("Invalid method");
+    return;
+  }
+
+  localStorage.setItem('totals', JSON.stringify(totals));
+
+  cart = [];
+  document.getElementById('list').innerHTML = '';
+  document.getElementById('total').innerText = 0;
+
+  updateBanking();
+  updateReports();
+
+  alert('Sale saved');
+}
+
+// UPDATE UI
+function updateBanking(){
+  document.getElementById('cashTotal').innerText = totals.cash;
+  document.getElementById('waveTotal').innerText = totals.wave;
+  document.getElementById('bankTotal').innerText = totals.bank;
+}
+
+function updateReports(){
+  let total = totals.cash + totals.wave + totals.bank;
+
+  document.getElementById('reportTotal').innerText = total;
+
+  if(totals.cash < 0){
+    document.getElementById('fraud').innerText = "⚠️ Cash mismatch!";
+  } else {
+    document.getElementById('fraud').innerText = "";
+  }
 }
 
 </script>
