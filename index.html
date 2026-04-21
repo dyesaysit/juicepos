@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JuicePOS Pro</title>
+
+<link rel="manifest" href="manifest.json">
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+
+<style>
+body { font-family: Arial; margin:0; background:#f4f4f4;}
+header { background:green; color:white; padding:15px; text-align:center;}
+.container { padding:15px;}
+button { padding:10px; margin:5px; background:green; color:white; border:none; border-radius:5px;}
+input { padding:10px; margin:5px;}
+.hidden { display:none;}
+.card { background:white; padding:15px; margin:10px 0; border-radius:8px;}
+</style>
+</head>
+
+<body>
+
+<header>JuicePOS Pro</header>
+
+<div class="container">
+
+<!-- LOGIN -->
+<div id="login">
+<h3>Login</h3>
+<input id="username" placeholder="Username">
+<input id="password" placeholder="Password" type="password">
+<button onclick="login()">Login</button>
+<button onclick="showSetup()">First Setup</button>
+</div>
+
+<!-- SETUP -->
+<div id="setup" class="hidden">
+<h3>Setup Admin</h3>
+<input id="newUser" placeholder="Admin Username">
+<input id="newPass" placeholder="Password" type="password">
+<button onclick="createAdmin()">Create Admin</button>
+</div>
+
+<!-- MAIN -->
+<div id="app" class="hidden">
+
+<button onclick="showPage('sales')">Sales</button>
+<button onclick="showPage('banking')">Banking</button>
+<button onclick="showPage('reports')">Reports</button>
+<button onclick="logout()">Logout</button>
+
+<!-- SALES -->
+<div id="sales">
+<h3>Sales</h3>
+<input id="product" placeholder="Product">
+<input id="price" placeholder="Price" type="number">
+<button onclick="addItem()">Add</button>
+
+<ul id="list"></ul>
+<h3>Total: GMD <span id="total">0</span></h3>
+
+<button onclick="checkout()">Checkout</button>
+</div>
+
+<!-- BANKING -->
+<div id="banking" class="hidden">
+<h3>Banking</h3>
+<p>Cash: <span id="cashTotal">0</span></p>
+<p>Wave: <span id="waveTotal">0</span></p>
+<p>Transfer: <span id="bankTotal">0</span></p>
+</div>
+
+<!-- REPORTS -->
+<div id="reports" class="hidden">
+<h3>Reports</h3>
+<p>Total Sales: <span id="reportTotal">0</span></p>
+<p id="fraud"></p>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let users = JSON.parse(localStorage.getItem('users')||'[]');
+let currentUser = null;
+let cart = [];
+let totals = JSON.parse(localStorage.getItem('totals')||'{"cash":0,"wave":0,"bank":0}');
+
+function showSetup(){
+  document.getElementById('setup').classList.remove('hidden');
+}
+
+function createAdmin(){
+  let u = newUser.value;
+  let p = newPass.value;
+  users.push({u,p,role:'admin'});
+  localStorage.setItem('users',JSON.stringify(users));
+  alert('Admin created');
+}
+
+function login(){
+  let u = username.value;
+  let p = password.value;
+  let user = users.find(x=>x.u==u && x.p==p);
+  if(user){
+    currentUser=user;
+    loginDiv.style.display='none';
+    app.classList.remove('hidden');
+  } else alert('Invalid login');
+}
+
+function logout(){
+  location.reload();
+}
+
+function showPage(page){
+  sales.classList.add('hidden');
+  banking.classList.add('hidden');
+  reports.classList.add('hidden');
+  document.getElementById(page).classList.remove('hidden');
+}
+
+function addItem(){
+  let p = product.value;
+  let pr = Number(price.value);
+  cart.push({p,pr});
+  list.innerHTML += `<li>${p} - ${pr}</li>`;
+  updateTotal();
+}
+
+function updateTotal(){
+  let t = cart.reduce((a,b)=>a+b.pr,0);
+  total.innerText=t;
+}
+
+function checkout(){
+  let method = prompt("Payment? cash/wave/bank");
+  let t = cart.reduce((a,b)=>a+b.pr,0);
+
+  if(method=='cash') totals.cash+=t;
+  if(method=='wave') totals.wave+=t;
+  if(method=='bank') totals.bank+=t;
+
+  localStorage.setItem('totals',JSON.stringify(totals));
+
+  reportTotal.innerText = totals.cash+totals.wave+totals.bank;
+
+  if(totals.cash < 0){
+    fraud.innerText="⚠️ Cash mismatch!";
+  }
+
+  cart=[];
+  list.innerHTML='';
+  total.innerText=0;
+
+  alert('Saved');
+}
+
+</script>
+
+</body>
+</html>
