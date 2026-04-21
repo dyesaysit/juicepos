@@ -2,114 +2,2120 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#006400">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>JuicePOS</title>
-
+<link rel="manifest" href="manifest.json">
 <style>
-:root{
-  --primary:#006400;
-  --primary-dark:#004d00;
-  --danger:#c0392b;
-  --danger-light:#fadbd8;
-  --warning:#e67e22;
-  --warning-light:#fdebd0;
-  --bg:#f4f6f4;
-}
-body{margin:0;font-family:Arial;background:var(--bg);}
+  :root {
+    --primary: #006400;
+    --primary-light: #228B22;
+    --primary-dark: #004d00;
+    --accent: #FFD700;
+    --accent-dark: #FFA500;
+    --bg: #f0f4f0;
+    --surface: #ffffff;
+    --surface2: #f7faf7;
+    --border: #d0e0d0;
+    --text: #1a2e1a;
+    --text2: #4a6a4a;
+    --text3: #7a9a7a;
+    --danger: #c0392b;
+    --danger-light: #fadbd8;
+    --success: #27ae60;
+    --success-light: #d5f5e3;
+    --warning: #e67e22;
+    --warning-light: #fdebd0;
+    --info: #2980b9;
+    --info-light: #d6eaf8;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(0,100,0,0.10);
+    --shadow-lg: 0 8px 32px rgba(0,100,0,0.15);
+    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --nav-h: 60px;
+    --tab-h: 56px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+  button { font-family: var(--font); cursor: pointer; border: none; outline: none; }
+  input, select, textarea { font-family: var(--font); outline: none; border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; width: 100%; font-size: 15px; color: var(--text); background: var(--surface); transition: border-color 0.2s; }
+  input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+  label { font-size: 13px; font-weight: 600; color: var(--text2); display: block; margin-bottom: 4px; }
+  h1,h2,h3,h4 { color: var(--text); }
+  .hidden { display: none !important; }
+  .page { display: none; min-height: 100vh; padding-bottom: 10px; }
+  .page.active { display: block; }
+  #page-sell { display: none; flex-direction: column; height: calc(100dvh - 56px); padding-bottom: 0; overflow: hidden; position: relative; }
+  #page-sell.active { display: flex; }
+  #sell-action-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--tab-h) + 6px); /* sits ABOVE bottom nav */
+  background: var(--surface);
+  border-top: 2px solid var(--primary);
+  padding: 8px 10px;
+  z-index: 150; /* higher than bottom nav */
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
+} 
 
-#sell-action-bar{
-  position:fixed;
-  bottom:70px;
-  left:0;
-  right:0;
-  background:white;
-  padding:10px;
-  border-top:2px solid var(--primary);
-}
+  /* Auth */
+  #auth-screen { background: linear-gradient(160deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+  .auth-logo { width: 80px; height: 80px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; box-shadow: 0 4px 20px rgba(255,215,0,0.4); }
+  .auth-logo svg { width: 44px; height: 44px; }
+  .auth-card { background: var(--surface); border-radius: 20px; padding: 28px 24px; width: 100%; max-width: 380px; box-shadow: var(--shadow-lg); }
+  .auth-title { text-align: center; font-size: 22px; font-weight: 700; color: var(--primary-dark); margin-bottom: 6px; }
+  .auth-sub { text-align: center; font-size: 13px; color: var(--text3); margin-bottom: 24px; }
+  .form-group { margin-bottom: 16px; }
+  .btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 20px; border-radius: var(--radius); font-size: 15px; font-weight: 600; transition: all 0.2s; width: 100%; }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-secondary { background: var(--surface2); color: var(--primary); border: 1.5px solid var(--border); }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-accent { background: var(--accent); color: var(--primary-dark); }
+  .btn-sm { padding: 8px 14px; font-size: 13px; border-radius: var(--radius-sm); width: auto; }
+  .btn-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--surface2); border: 1.5px solid var(--border); color: var(--primary); font-size: 18px; padding: 0; width: auto; }
 
-/* 🔥 NEW BUTTON LAYOUT */
-.action-buttons{
-  display:flex;
-  gap:10px;
-}
+  /* Top Nav */
+  .top-nav { position: sticky; top: 0; z-index: 100; background: var(--primary); color: white; height: var(--nav-h); display: flex; align-items: center; padding: 0 16px; gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  .nav-title { font-size: 17px; font-weight: 700; flex: 1; }
+  .nav-badge { background: var(--accent); color: var(--primary-dark); border-radius: 20px; padding: 2px 10px; font-size: 12px; font-weight: 700; }
 
-.action-buttons button{
-  border:none;
-  border-radius:10px;
-  font-weight:bold;
-}
+  /* Bottom Tab Nav */
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: var(--surface); border-top: 1px solid var(--border); height: var(--tab-h); display: flex; box-shadow: 0 -2px 12px rgba(0,0,0,0.08); }
+  .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--text3); font-size: 10px; font-weight: 600; cursor: pointer; padding: 6px 4px; transition: color 0.2s; border: none; background: transparent; }
+  .tab-item.active { color: var(--primary); }
+  .tab-item svg { width: 22px; height: 22px; }
 
-/* Individual buttons */
-.clear-btn{
-  width:50px;
-  height:50px;
-  background:var(--danger-light);
-  color:var(--danger);
-  font-size:20px;
-}
+  /* Cards */
+  .card { background: var(--surface); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); margin-bottom: 12px; }
+  .card-title { font-size: 14px; font-weight: 700; color: var(--text2); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-.cashout-btn{
-  padding:0 16px;
-  background:var(--warning-light);
-  color:var(--warning);
-  border:2px solid var(--warning);
-}
+  /* Stat cards */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 16px; }
+  .stat-card { background: var(--surface); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); }
+  .stat-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .stat-value { font-size: 20px; font-weight: 700; color: var(--primary); }
+  .stat-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
 
-.charge-btn{
-  flex:1;
-  height:55px;
-  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
-  color:white;
-  font-size:16px;
-  transform:translateY(-8px); /* 🔥 lifted */
-}
+  /* Product grid */
+  .products-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 16px; }
+  .product-card { background: var(--surface); border-radius: var(--radius); padding: 14px 12px; box-shadow: var(--shadow); cursor: pointer; border: 2px solid transparent; transition: all 0.2s; position: relative; }
+  .product-card:active { transform: scale(0.97); }
+  .product-card.out-of-stock { opacity: 0.5; pointer-events: none; }
+  .product-icon { width: 44px; height: 44px; border-radius: 50%; background: var(--success-light); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 8px; }
+  .product-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .product-size { font-size: 11px; color: var(--text3); }
+  .product-price { font-size: 16px; font-weight: 700; color: var(--primary); margin-top: 6px; }
+  .product-stock { font-size: 11px; color: var(--text3); }
+  .stock-badge { position: absolute; top: 8px; right: 8px; background: var(--danger-light); color: var(--danger); font-size: 10px; font-weight: 700; border-radius: 20px; padding: 2px 7px; }
+  .stock-ok { background: var(--success-light); color: var(--success); }
+
+  /* Cart */
+  .cart-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .cart-item-info { flex: 1; }
+  .cart-item-name { font-size: 14px; font-weight: 600; }
+  .cart-item-price { font-size: 12px; color: var(--text3); }
+  .qty-controls { display: flex; align-items: center; gap: 8px; }
+  .qty-btn { width: 30px; height: 30px; border-radius: 50%; background: var(--surface2); border: 1.5px solid var(--border); color: var(--primary); font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 700; padding: 0; width: auto; }
+  .qty-display { font-size: 15px; font-weight: 700; min-width: 28px; text-align: center; }
+  .cart-item-total { font-size: 14px; font-weight: 700; color: var(--primary); min-width: 64px; text-align: right; }
+
+  /* Payment */
+  .payment-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .payment-method { border: 2px solid var(--border); border-radius: var(--radius); padding: 14px 10px; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--surface); }
+  .payment-method.selected { border-color: var(--primary); background: var(--success-light); }
+  .payment-method-icon { font-size: 24px; margin-bottom: 6px; }
+  .payment-method-name { font-size: 13px; font-weight: 700; color: var(--text2); }
+  .payment-method-desc { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* Modals */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: flex-end; justify-content: center; }
+  .modal-overlay.center { align-items: center; padding: 16px; }
+  .modal { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; padding: 20px; padding-bottom: 32px; }
+  .modal.center-modal { border-radius: 20px; max-height: 85vh; }
+  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+
+  /* List items */
+  .list-item { display: flex; align-items: center; gap: 12px; padding: 13px 16px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .list-item:first-child { border-radius: var(--radius) var(--radius) 0 0; }
+  .list-item:last-child { border-radius: 0 0 var(--radius) var(--radius); border-bottom: none; }
+  .list-item-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--success-light); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: var(--primary); flex-shrink: 0; }
+  .list-item-info { flex: 1; }
+  .list-item-title { font-size: 14px; font-weight: 600; }
+  .list-item-sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
+  .list-item-right { text-align: right; }
+  .list-item-amount { font-size: 14px; font-weight: 700; color: var(--primary); }
+  .list-item-meta { font-size: 11px; color: var(--text3); }
+
+  /* Tabs */
+  .tab-bar { display: flex; background: var(--surface); border-radius: var(--radius); padding: 4px; margin: 0 16px 12px; box-shadow: var(--shadow); }
+  .tab-btn { flex: 1; padding: 8px 4px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--text3); cursor: pointer; text-align: center; transition: all 0.2s; background: transparent; border: none; }
+  .tab-btn.active { background: var(--primary); color: white; }
+
+  /* Section header */
+  .section-header { padding: 12px 16px 6px; display: flex; align-items: center; justify-content: space-between; }
+  .section-title { font-size: 16px; font-weight: 700; color: var(--text); }
+
+  /* Chips */
+  .chips { display: flex; gap: 8px; overflow-x: auto; padding: 8px 16px; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip { flex-shrink: 0; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; background: var(--surface); border: 1.5px solid var(--border); color: var(--text2); cursor: pointer; transition: all 0.2s; }
+  .chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+  /* Divider */
+  .divider { height: 1px; background: var(--border); margin: 8px 0; }
+  .divider-label { display: flex; align-items: center; gap: 10px; margin: 16px 0; color: var(--text3); font-size: 12px; }
+  .divider-label::before, .divider-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* Toast */
+  #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: white; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; z-index: 999; opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Setup wizard */
+  .setup-step { padding: 24px 20px; }
+  .setup-icon { font-size: 48px; text-align: center; margin-bottom: 12px; }
+  .setup-title { font-size: 24px; font-weight: 800; text-align: center; color: var(--primary-dark); margin-bottom: 8px; }
+  .setup-sub { text-align: center; color: var(--text3); font-size: 14px; margin-bottom: 28px; line-height: 1.5; }
+  .progress-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 28px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background 0.3s; }
+  .dot.active { background: var(--primary); }
+
+  /* Receipt preview */
+  .receipt { font-family: 'Courier New', monospace; font-size: 13px; background: white; padding: 16px; border-radius: 8px; border: 1px dashed var(--border); line-height: 1.6; }
+  .receipt-center { text-align: center; }
+  .receipt-divider { border-top: 1px dashed #ccc; margin: 8px 0; }
+  .receipt-row { display: flex; justify-content: space-between; }
+
+  /* Scrollable list */
+  .scroll-list { padding: 0 16px; }
+
+  /* Bulk sale specific */
+  .bulk-card { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; border-radius: var(--radius); padding: 20px 16px; margin: 0 16px 16px; }
+  .bulk-title { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+  .bulk-sub { font-size: 13px; opacity: 0.8; }
+
+  /* Bank accounts */
+  .bank-card { background: linear-gradient(135deg, #1a237e, #283593); color: white; border-radius: var(--radius); padding: 18px; margin-bottom: 10px; }
+  .bank-name { font-size: 13px; opacity: 0.8; margin-bottom: 4px; }
+  .bank-account { font-size: 22px; font-weight: 700; letter-spacing: 2px; }
+  .bank-holder { font-size: 14px; margin-top: 8px; opacity: 0.9; }
+
+  /* Toggle */
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border); }
+  .toggle-label { font-size: 15px; color: var(--text); }
+  .toggle { width: 44px; height: 24px; border-radius: 12px; background: var(--border); position: relative; cursor: pointer; transition: background 0.2s; }
+  .toggle.on { background: var(--primary); }
+  .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: white; transition: left 0.2s; }
+  .toggle.on::after { left: 22px; }
+
+  /* Search */
+  .search-bar { display: flex; align-items: center; background: var(--surface); border: 1.5px solid var(--border); border-radius: 25px; padding: 8px 16px; gap: 10px; margin: 8px 16px; }
+  .search-bar input { border: none; padding: 0; font-size: 14px; background: transparent; }
+  .search-bar svg { color: var(--text3); flex-shrink: 0; }
+
+  /* Empty state */
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--text3); }
+  .empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state-text { font-size: 15px; font-weight: 600; margin-bottom: 6px; color: var(--text2); }
+  .empty-state-sub { font-size: 13px; }
+
+  /* Pill */
+  .pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .pill-success { background: var(--success-light); color: var(--success); }
+  .pill-danger { background: var(--danger-light); color: var(--danger); }
+  .pill-warning { background: var(--warning-light); color: var(--warning); }
+  .pill-info { background: var(--info-light); color: var(--info); }
+  .pill-gray { background: var(--surface2); color: var(--text3); border: 1px solid var(--border); }
+
+  /* Floating action button */
+  .fab { position: fixed; bottom: 76px; right: 16px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: white; font-size: 26px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-lg); z-index: 90; cursor: pointer; transition: all 0.2s; }
+  .fab:active { transform: scale(0.95); }
+
+  /* Summary row */
+  .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+  .summary-label { font-size: 14px; color: var(--text2); }
+  .summary-value { font-size: 14px; font-weight: 600; }
+  .summary-total { font-size: 18px; font-weight: 800; color: var(--primary); }
+
+  /* Onboarding */
+  #setup-screen { background: linear-gradient(160deg, #f0f4f0 0%, #e8f5e9 100%); min-height: 100vh; }
+  .setup-header { background: var(--primary); color: white; padding: 20px 16px 16px; }
+  .setup-header h2 { font-size: 20px; font-weight: 800; }
+  .setup-header p { font-size: 13px; opacity: 0.8; margin-top: 2px; }
+
+  /* Input with icon */
+  .input-group { position: relative; }
+  .input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text3); }
+  .input-icon + input { padding-left: 36px; }
+
+  /* Transaction type colors */
+  .tx-cash { color: var(--success); }
+  .tx-wave { color: var(--info); }
+  .tx-bank { color: var(--warning); }
+
+  @media (min-width: 480px) {
+    .page { max-width: 480px; margin: 0 auto; }
+    .bottom-nav { max-width: 480px; left: 50%; transform: translateX(-50%); }
+    .modal-overlay:not(.center) .modal { max-width: 480px; }
+  }
+
+  .animated { animation: slideUp 0.3s ease; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 </style>
 </head>
-
 <body>
 
-<!-- SELL PAGE ONLY (rest of your app remains same logic) -->
-<div id="page-sell">
-
-  <!-- CART AREA -->
-  <div id="cart" style="padding:20px;">
-    Cart Items Appear Here
-  </div>
-
-  <!-- ACTION BAR -->
-  <div id="sell-action-bar">
-
-    <div class="action-buttons">
-
-      <button class="clear-btn" onclick="clearCart()">🗑</button>
-
-      <button class="cashout-btn" onclick="openCashOut()">
-        💸 Cash Out
-      </button>
-
-      <button class="charge-btn" onclick="openCartPayment()">
-        ✅ Charge
-      </button>
-
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div style="text-align:center;margin-bottom:24px;">
+    <div class="auth-logo">
+      <svg viewBox="0 0 44 44" fill="none">
+        <path d="M22 6C14 6 8 14 8 20c0 8 6 14 14 16 8-2 14-8 14-16 0-6-6-14-14-14z" fill="#006400"/>
+        <path d="M16 22c2 4 6 6 6 6s4-2 6-6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="22" cy="16" r="3" fill="#FFD700"/>
+        <path d="M18 18c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="white" stroke-width="1.5"/>
+      </svg>
     </div>
-
+    <div style="color:white;font-size:26px;font-weight:800;letter-spacing:-0.5px;">JuicePOS</div>
+    <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-top:4px;">Professional Juice Bar Management</div>
   </div>
-
+  <div class="auth-card">
+    <div class="auth-title">Welcome Back</div>
+    <div class="auth-sub">Sign in to your account</div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="login-username" placeholder="Enter username" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" onclick="handleLogin()" style="margin-top:8px;">Sign In</button>
+    <div id="login-error" style="color:var(--danger);font-size:13px;text-align:center;margin-top:10px;"></div>
+  </div>
 </div>
 
+<!-- SETUP SCREEN -->
+<div id="setup-screen" class="hidden">
+  <div class="setup-header">
+    <h2>🍹 Set Up Your Business</h2>
+    <p>Let's get your juice bar ready in a few steps</p>
+  </div>
+  <div id="setup-content">
+    <!-- Rendered by JS -->
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="main-app" class="hidden">
+  <!-- PAGES -->
+  <div id="page-sell" class="page active">
+    <!-- TOP NAV -->
+    <div class="top-nav" style="flex-shrink:0;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M3 3h18l-2 9H5L3 3z"/><circle cx="9" cy="20" r="1"/><circle cx="16" cy="20" r="1"/></svg>
+      <span class="nav-title">Point of Sale</span>
+      <button style="background:rgba(255,255,255,0.15);color:white;border:1.5px solid rgba(255,255,255,0.3);border-radius:var(--radius-sm);padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;" onclick="openBulkSale()">📦 Bulk</button>
+    </div>
+
+    <!-- SEARCH BAR — fixed height, dropdown overlays cart -->
+    <div style="padding:10px 12px 8px;background:var(--surface);border-bottom:2px solid var(--primary);flex-shrink:0;position:relative;z-index:50;">
+      <div style="position:relative;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="sell-search" placeholder="Type product name to search and add…" oninput="onSellSearch(this.value)" autocomplete="off" style="padding-left:38px;padding-right:36px;font-size:15px;border-radius:25px;border:2px solid var(--border);background:var(--bg);width:100%;">
+        <button id="sell-search-clear" onclick="clearSellSearch()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);font-size:18px;padding:0;display:none;cursor:pointer;line-height:1;">✕</button>
+      </div>
+      <!-- Dropdown overlays the cart list below -->
+      <div id="sell-search-results" style="display:none;position:absolute;left:12px;right:12px;top:calc(100% - 4px);background:var(--surface);border:1.5px solid var(--primary);border-top:none;border-radius:0 0 var(--radius) var(--radius);max-height:260px;overflow-y:auto;box-shadow:var(--shadow-lg);z-index:500;"></div>
+    </div>
+
+    <!-- CART ITEMS — grows to fill space, scrolls independently -->
+    <div style="flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;min-height:0;">
+      <div id="live-cart-items">
+        <div style="text-align:center;padding:48px 24px;color:var(--text3);">
+          <div style="font-size:56px;margin-bottom:14px;">🧃</div>
+          <div style="font-size:16px;font-weight:700;color:var(--text2);margin-bottom:8px;">Start typing to add items</div>
+          <div style="font-size:13px;line-height:1.6;">Search any product above —<br>selected items appear here</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTION BAR — always pinned above bottom nav, never hidden -->
+    <div id="sell-action-bar">
+      <!-- Discount + Total — visible only when cart has items -->
+      <div id="live-cart-footer" style="display:none;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:13px;color:var(--text3);flex:1;">Discount</span>
+          <input type="number" id="discount-input" min="0" max="100" step="0.5" value="0" placeholder="0" oninput="renderLiveCart()" style="width:56px;height:30px;text-align:center;padding:0 4px;font-size:14px;font-weight:700;border:1.5px solid var(--border);border-radius:var(--radius-sm);">
+          <span style="font-size:13px;color:var(--text3);">%</span>
+          <span id="discount-amt" style="font-size:13px;font-weight:700;color:var(--danger);min-width:70px;text-align:right;"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+          <span style="font-size:17px;font-weight:800;color:var(--text);">Total</span>
+          <span id="cart-total-display" style="font-size:22px;font-weight:800;color:var(--primary);">GMD 0.00</span>
+        </div>
+      </div>
+      <!-- THREE BUTTONS — always shown no matter what -->
+      <div style="display:flex;gap:8px;padding-top:6px;">
+        <button onclick="clearCart()" title="Clear cart" style="flex-shrink:0;width:46px;height:46px;background:var(--danger-light);color:var(--danger);border:none;border-radius:var(--radius-sm);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;">🗑</button>
+        <button onclick="openCashOut()" style="flex-shrink:0;height:46px;padding:0 14px;background:var(--warning-light);color:var(--warning);border:2px solid var(--warning);border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">💸 Cash Out</button>
+        <button id="charge-btn" onclick="openCartPayment()" style="flex:1;height:46px;background:var(--primary);color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;opacity:0.4;">
+          <span>✅ Charge</span><span id="cart-total-btn"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Compat stubs -->
+    <span id="cart-count-badge" style="display:none;"></span>
+    <span id="cart-subtotal-live" style="display:none;"></span>
+    <div id="live-checkout-bar" style="display:none;"></div>
+  </div>
+
+  <div id="page-inventory" class="page">
+    <div class="top-nav">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 3v18M16 3v18M2 12h20"/></svg>
+      <span class="nav-title">Inventory</span>
+      <button class="btn btn-accent btn-sm" style="width:auto;" onclick="openAddProduct()">+ Add</button>
+    </div>
+    <div class="search-bar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search products..." oninput="searchProducts(this.value)" id="inventory-search">
+    </div>
+    <div id="inventory-list" class="scroll-list"></div>
+  </div>
+
+  <div id="page-sales" class="page">
+    <div class="top-nav">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
+      <span class="nav-title" id="sales-page-title">Sales</span>
+    </div>
+    <div id="sales-content"></div>
+  </div>
+
+  <div id="page-banking" class="page" style="display:none;">
+    <div class="top-nav">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+      <span class="nav-title">Banking</span>
+      <button class="btn btn-accent btn-sm" style="width:auto;" onclick="openAddBank()">+ Bank</button>
+    </div>
+    <div id="banking-content"></div>
+  </div>
+
+  <div id="page-accounting" class="page" style="display:none;">
+    <div class="top-nav">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      <span class="nav-title">Accounting</span>
+      <button class="btn btn-accent btn-sm" style="width:auto;" onclick="openAddExpense()">+ Expense</button>
+    </div>
+    <div id="accounting-content"></div>
+  </div>
+
+  <div id="page-settings" class="page">
+    <div class="top-nav">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span class="nav-title">Settings</span>
+    </div>
+    <div id="settings-content"></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav" id="bottom-nav"></nav>
+</div>
+
+<!-- MODALS -->
+<div id="modal-container"></div>
+<div id="toast"></div>
+
 <script>
-function clearCart(){
-  alert("Cart cleared");
+// ===================== DATA STORE =====================
+const DB = {
+  get(key) { try { return JSON.parse(localStorage.getItem('jpOS_' + key)); } catch { return null; } },
+  set(key, val) { localStorage.setItem('jpOS_' + key, JSON.stringify(val)); },
+  del(key) { localStorage.removeItem('jpOS_' + key); }
+};
+
+// ===================== STATE =====================
+let APP = {
+  company: null, users: [], products: [], sales: [], expenses: [], banks: [], deposits: [], cashOuts: [],
+  currentUser: null, cart: [], activeTab: 'sell', setupStep: 0
+};
+
+function loadState() {
+  APP.company    = DB.get('company');
+  APP.users      = DB.get('users')    || [];
+  APP.products   = DB.get('products') || [];
+  APP.sales      = DB.get('sales')    || [];
+  APP.expenses   = DB.get('expenses') || [];
+  APP.banks      = DB.get('banks')    || [];
+  APP.deposits   = DB.get('deposits') || [];
+  APP.cashOuts   = DB.get('cashOuts') || [];
 }
 
-function openCashOut(){
-  alert("Cash out opened");
+function saveState() {
+  DB.set('company', APP.company);
+  DB.set('users', APP.users);
+  DB.set('products', APP.products);
+  DB.set('sales', APP.sales);
+  DB.set('expenses', APP.expenses);
+  DB.set('banks', APP.banks);
+  DB.set('deposits', APP.deposits);
+  DB.set('cashOuts', APP.cashOuts);
 }
 
-function openCartPayment(){
-  alert("Charge triggered");
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function fmt(n) { return (APP.company?.currency||'GMD') + ' ' + Number(n).toFixed(2); }
+function fmtNum(n) { return Number(n).toLocaleString('en-GH', {minimumFractionDigits:2,maximumFractionDigits:2}); }
+function today() { return new Date().toISOString().split('T')[0]; }
+function timeNow() { return new Date().toLocaleTimeString('en-GH',{hour:'2-digit',minute:'2-digit'}); }
+function dateStr(iso) { return new Date(iso).toLocaleDateString('en-GH',{day:'2-digit',month:'short',year:'numeric'}); }
+
+// ===================== TOAST =====================
+function toast(msg, dur=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
 }
+
+// ===================== MODALS =====================
+function showModal(html, center=false) {
+  const mc = document.getElementById('modal-container');
+  mc.innerHTML = `<div class="modal-overlay${center?' center':''}" onclick="closeModalOnBg(event)">
+    <div class="modal${center?' center-modal':''}">
+      <div class="modal-handle"></div>
+      ${html}
+    </div>
+  </div>`;
+}
+function closeModal() { document.getElementById('modal-container').innerHTML = ''; }
+function closeModalOnBg(e) { if(e.target.classList.contains('modal-overlay')) closeModal(); }
+
+// ===================== AUTH =====================
+function handleLogin() {
+  const u = document.getElementById('login-username').value.trim();
+  const p = document.getElementById('login-password').value;
+  const err = document.getElementById('login-error');
+  const user = APP.users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p && x.active);
+  if (!user) { err.textContent = 'Invalid username or password.'; return; }
+  APP.currentUser = user;
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('main-app').classList.remove('hidden');
+  initMainApp();
+}
+
+// ===================== SETUP =====================
+const SETUP_STEPS = ['company','receipt','admin','done'];
+
+function startSetup() {
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('setup-screen').classList.remove('hidden');
+  APP.setupStep = 0;
+  renderSetupStep();
+}
+
+function renderSetupStep() {
+  const s = APP.setupStep;
+  const total = 3;
+  const dots = Array.from({length:total},(_,i)=>`<div class="dot${i===s?' active':''}"></div>`).join('');
+  let content = '';
+  if (s === 0) {
+    content = `
+      <div class="setup-step">
+        <div class="progress-dots">${dots}</div>
+        <div class="setup-icon">🏢</div>
+        <div class="setup-title">Company Info</div>
+        <div class="setup-sub">This will appear on your receipts, just like QuickBooks POS.</div>
+        <div class="form-group"><label>Business Name *</label><input id="s-bname" placeholder="e.g. Fresh Sips Juice Bar"></div>
+        <div class="form-group"><label>Address</label><input id="s-addr" placeholder="e.g. Osu, Accra"></div>
+        <div class="form-group"><label>Phone</label><input id="s-phone" type="tel" placeholder="+233 XX XXX XXXX"></div>
+        <div class="form-group"><label>Email (optional)</label><input id="s-email" type="email" placeholder="info@freshsips.com"></div>
+        <div class="form-group"><label>Tax ID / VAT (optional)</label><input id="s-tax" placeholder="GH-VAT-XXXXXXX"></div>
+        <button class="btn btn-primary" onclick="setupNext()">Next &rarr;</button>
+      </div>`;
+  } else if (s === 1) {
+    content = `
+      <div class="setup-step">
+        <div class="progress-dots">${dots}</div>
+        <div class="setup-icon">🧾</div>
+        <div class="setup-title">Receipt Settings</div>
+        <div class="setup-sub">Customize how receipts look for your 80mm thermal printer.</div>
+        <div class="form-group"><label>Receipt Footer Message</label><textarea id="s-footer" rows="2" placeholder="Thank you! Come again!"></textarea></div>
+        <div class="form-group"><label>Currency</label><select id="s-currency"><option value="GMD">GMD — Gambian Dalasi (D)</option><option value="GHS">GHS — Ghana Cedi (₵)</option><option value="USD">USD — US Dollar ($)</option><option value="EUR">EUR — Euro (€)</option><option value="GBP">GBP — British Pound (£)</option><option value="NGN">NGN — Nigerian Naira (₦)</option></select></div>
+        <div class="form-group"><label>Receipt Header (optional)</label><input id="s-rheader" placeholder="Welcome to our store!"></div>
+        <div style="margin-bottom:16px;">
+          <div class="card-title" style="margin-bottom:8px;">Preview</div>
+          <div class="receipt" id="receipt-preview" style="font-size:11px;"></div>
+        </div>
+        <button class="btn btn-secondary" style="margin-bottom:10px;" onclick="APP.setupStep--;renderSetupStep()">&larr; Back</button>
+        <button class="btn btn-primary" onclick="setupNext()">Next &rarr;</button>
+      </div>`;
+    setTimeout(updateReceiptPreview, 100);
+  } else if (s === 2) {
+    content = `
+      <div class="setup-step">
+        <div class="progress-dots">${dots}</div>
+        <div class="setup-icon">👤</div>
+        <div class="setup-title">Create Admin Account</div>
+        <div class="setup-sub">This is the master account with full access to all features.</div>
+        <div class="form-group"><label>Full Name *</label><input id="s-aname" placeholder="Your name"></div>
+        <div class="form-group"><label>Username *</label><input id="s-auser" placeholder="admin (no spaces)"></div>
+        <div class="form-group"><label>Password *</label><input type="password" id="s-apass" placeholder="Min 6 characters"></div>
+        <div class="form-group"><label>Confirm Password *</label><input type="password" id="s-apass2" placeholder="Repeat password"></div>
+        <button class="btn btn-secondary" style="margin-bottom:10px;" onclick="APP.setupStep--;renderSetupStep()">&larr; Back</button>
+        <button class="btn btn-primary" onclick="setupNext()">Finish Setup</button>
+        <div id="setup-err" style="color:var(--danger);font-size:13px;text-align:center;margin-top:10px;"></div>
+      </div>`;
+  }
+  document.getElementById('setup-content').innerHTML = content;
+}
+
+function updateReceiptPreview() {
+  const name = (document.getElementById('s-bname')?.value || APP.company?.name || 'YOUR BUSINESS') ;
+  const footer = document.getElementById('s-footer')?.value || 'Thank you!';
+  const header = document.getElementById('s-rheader')?.value || '';
+  document.getElementById('receipt-preview').innerHTML = `
+    <div class="receipt-center"><strong>${name}</strong></div>
+    ${header ? `<div class="receipt-center">${header}</div>`:''}
+    <div class="receipt-center">${APP.company?.address||'Your Address'}</div>
+    <div class="receipt-divider"></div>
+    <div class="receipt-center">SALE RECEIPT</div>
+    <div class="receipt-center">${today()} ${timeNow()}</div>
+    <div class="receipt-divider"></div>
+    <div class="receipt-row"><span>Fresh Orange 500ml x1</span><span>GMD 5.00</span></div>
+    <div class="receipt-row"><span>Watermelon 1L x2</span><span>GMD 14.00</span></div>
+    <div class="receipt-divider"></div>
+    <div class="receipt-row"><strong>TOTAL</strong><strong>GMD 19.00</strong></div>
+    <div class="receipt-row"><span>Payment: Cash</span><span>GMD 20.00</span></div>
+    <div class="receipt-row"><span>Change</span><span>GMD 1.00</span></div>
+    <div class="receipt-divider"></div>
+    <div class="receipt-center">${footer}</div>
+  `;
+}
+
+function setupNext() {
+  const err = document.getElementById('setup-err');
+  if (APP.setupStep === 0) {
+    const name = document.getElementById('s-bname').value.trim();
+    if (!name) { toast('Business name is required'); return; }
+    APP.company = {
+      name, address: document.getElementById('s-addr').value.trim(),
+      phone: document.getElementById('s-phone').value.trim(),
+      email: document.getElementById('s-email').value.trim(),
+      taxId: document.getElementById('s-tax').value.trim(),
+      currency: 'GMD', receiptFooter: 'Thank you! Come again!', receiptHeader: ''
+    };
+  } else if (APP.setupStep === 1) {
+    APP.company.receiptFooter = document.getElementById('s-footer').value || 'Thank you!';
+    APP.company.currency = document.getElementById('s-currency').value;
+    APP.company.receiptHeader = document.getElementById('s-rheader').value;
+  } else if (APP.setupStep === 2) {
+    const name = document.getElementById('s-aname').value.trim();
+    const uname = document.getElementById('s-auser').value.trim().replace(/\s/g,'');
+    const pass = document.getElementById('s-apass').value;
+    const pass2 = document.getElementById('s-apass2').value;
+    if (!name || !uname || !pass) { if(err) err.textContent = 'All fields are required'; return; }
+    if (pass.length < 6) { if(err) err.textContent = 'Password must be at least 6 characters'; return; }
+    if (pass !== pass2) { if(err) err.textContent = 'Passwords do not match'; return; }
+    APP.users.push({ id: genId(), name, username: uname, password: pass, role: 'admin', active: true, createdAt: new Date().toISOString() });
+    // Demo products
+    APP.products = [
+      {id:genId(),name:'Orange Juice',size:'500ml',category:'Fresh',price:5,stock:50,emoji:'🍊',minStock:10},
+      {id:genId(),name:'Watermelon Juice',size:'1L',category:'Fresh',price:8,stock:30,emoji:'🍉',minStock:5},
+      {id:genId(),name:'Mixed Tropical',size:'750ml',category:'Blended',price:10,stock:20,emoji:'🥭',minStock:5},
+      {id:genId(),name:'Pineapple Juice',size:'500ml',category:'Fresh',price:6,stock:40,emoji:'🍍',minStock:10},
+      {id:genId(),name:'Green Detox',size:'350ml',category:'Healthy',price:12,stock:15,emoji:'🥦',minStock:3},
+      {id:genId(),name:'Strawberry Blend',size:'500ml',category:'Blended',price:9,stock:25,emoji:'🍓',minStock:5},
+    ];
+    saveState();
+    APP.currentUser = APP.users[0];
+    document.getElementById('setup-screen').classList.add('hidden');
+    document.getElementById('main-app').classList.remove('hidden');
+    initMainApp();
+    toast('Welcome to JuicePOS! 🎉');
+    return;
+  }
+  APP.setupStep++;
+  renderSetupStep();
+}
+
+// ===================== MAIN APP INIT =====================
+function initMainApp() {
+  buildBottomNav();
+  renderPage('sell');
+}
+
+function buildBottomNav() {
+  const isAdmin = APP.currentUser.role === 'admin';
+  const tabs = [
+    { id:'sell', label:'Sell', icon:'<path d="M3 3h18l-2 9H5L3 3z"/><circle cx="9" cy="20" r="1"/><circle cx="16" cy="20" r="1"/>' },
+    { id:'inventory', label:'Stock', icon:'<rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 3v18M16 3v18M2 12h20"/>' },
+    { id:'sales', label:'Sales', icon:'<path d="M12 20V10M18 20V4M6 20v-4"/>' },
+    ...(isAdmin ? [
+      { id:'banking', label:'Banking', icon:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>' },
+      { id:'accounting', label:'Finance', icon:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/>' },
+    ] : []),
+    { id:'settings', label:'More', icon:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>' },
+  ];
+  document.getElementById('bottom-nav').innerHTML = tabs.map(t => `
+    <button class="tab-item${t.id===APP.activeTab?' active':''}" onclick="renderPage('${t.id}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${t.icon}</svg>
+      ${t.label}
+    </button>`).join('');
+  // show/hide pages
+  ['sell','inventory','sales','banking','accounting','settings'].forEach(id => {
+    const p = document.getElementById('page-' + id);
+    if (p) p.style.display = '';
+  });
+  if (!isAdmin) {
+    ['banking','accounting'].forEach(id => {
+      const p = document.getElementById('page-' + id);
+      if (p) p.style.display = 'none';
+    });
+  }
+}
+
+function renderPage(tab) {
+  APP.activeTab = tab;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const pg = document.getElementById('page-' + tab);
+  if (pg) pg.classList.add('active');
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.toggle('active', t.getAttribute('onclick').includes(`'${tab}'`)));
+  if (tab === 'sell') renderSellPage();
+  if (tab === 'inventory') renderInventoryPage();
+  if (tab === 'sales') renderSalesPage();
+  if (tab === 'banking') renderBankingPage();
+  if (tab === 'accounting') renderAccountingPage();
+  if (tab === 'settings') renderSettingsPage();
+}
+
+// ===================== SELL PAGE =====================
+let sellActiveCategory = 'All';
+
+function renderSellPage() { renderLiveCart(); }
+function filterProducts(cat) { sellActiveCategory = cat; }
+function renderProductGrid() {}
+
+function onSellSearch(q) {
+  const clearBtn = document.getElementById('sell-search-clear');
+  const resultsEl = document.getElementById('sell-search-results');
+  if (clearBtn) clearBtn.style.display = q ? 'block' : 'none';
+  if (!q.trim()) { if(resultsEl) resultsEl.style.display = 'none'; return; }
+  const cur = APP.company?.currency||'GMD';
+  const filtered = APP.products.filter(p =>
+    p.stock > 0 && (
+      p.name.toLowerCase().includes(q.toLowerCase()) ||
+      p.category.toLowerCase().includes(q.toLowerCase()) ||
+      p.size.toLowerCase().includes(q.toLowerCase())
+    )
+  );
+  if (!resultsEl) return;
+  resultsEl.style.display = 'block';
+  if (!filtered.length) {
+    resultsEl.innerHTML = '<div style="padding:12px 16px;font-size:13px;color:var(--text3);">No matching products found</div>';
+    return;
+  }
+  resultsEl.innerHTML = filtered.map(p => {
+    const inCart = APP.cart.find(i=>i.productId===p.id);
+    return `<div onclick="addToCartFromSearch('${p.id}')" style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;background:${inCart?'var(--success-light)':'var(--surface)'};">
+      <span style="font-size:22px;flex-shrink:0;">${p.emoji||'🧃'}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:700;">${p.name} <span style="font-size:11px;font-weight:400;color:var(--text3);">${p.size}</span></div>
+        <div style="font-size:12px;color:var(--text3);">${p.category} · ${p.stock} in stock</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:15px;font-weight:800;color:var(--primary);">${cur} ${p.price.toFixed(2)}</div>
+        ${inCart ? `<div style="font-size:11px;color:var(--success);font-weight:700;">×${inCart.qty} in cart</div>` : '<div style="font-size:11px;color:var(--text3);">tap to add</div>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addToCartFromSearch(pid) {
+  addToCart(pid);
+  const q = document.getElementById('sell-search')?.value||'';
+  if (q.trim()) onSellSearch(q);
+}
+
+function clearSellSearch() {
+  const inp = document.getElementById('sell-search');
+  if (inp) inp.value = '';
+  document.getElementById('sell-search-clear').style.display = 'none';
+  const r = document.getElementById('sell-search-results');
+  if (r) r.style.display = 'none';
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#sell-search') && !e.target.closest('#sell-search-results')) {
+    const r = document.getElementById('sell-search-results');
+    if (r) r.style.display = 'none';
+  }
+});
+
+function addToCart(pid) {
+  const prod = APP.products.find(p=>p.id===pid);
+  if (!prod || prod.stock===0) return;
+  const existing = APP.cart.find(i=>i.productId===pid);
+  if (existing) {
+    if (existing.qty >= prod.stock) { toast('⚠️ Not enough stock'); return; }
+    existing.qty++;
+  } else {
+    APP.cart.push({ productId: pid, qty: 1, name: prod.name, size: prod.size, price: prod.price, emoji: prod.emoji });
+  }
+  renderLiveCart();
+}
+
+function liveCartQty(pid, delta) {
+  const idx = APP.cart.findIndex(i=>i.productId===pid);
+  if (idx<0) return;
+  if (delta === 'input') {
+    const el = document.getElementById('cart-qty-input-'+pid);
+    const val = parseInt(el?.value)||0;
+    if (val <= 0) { APP.cart.splice(idx,1); }
+    else { const prod = APP.products.find(p=>p.id===pid); APP.cart[idx].qty = Math.min(val, prod?.stock||999); }
+  } else {
+    APP.cart[idx].qty += delta;
+    if (APP.cart[idx].qty <= 0) APP.cart.splice(idx,1);
+    else { const prod = APP.products.find(p=>p.id===pid); if (prod && APP.cart[idx].qty > prod.stock) { APP.cart[idx].qty = prod.stock; toast('⚠️ Max stock reached'); } }
+  }
+  renderLiveCart();
+  const q = document.getElementById('sell-search')?.value||'';
+  if (q.trim()) onSellSearch(q);
+}
+
+function removeCartItem(pid) { APP.cart = APP.cart.filter(i=>i.productId!==pid); renderLiveCart(); }
+
+function getDiscount() {
+  const d = parseFloat(document.getElementById('discount-input')?.value)||0;
+  return Math.min(Math.max(d,0),100);
+}
+
+function renderLiveCart() {
+  const cur = APP.company?.currency||'GMD';
+  const subtotal = APP.cart.reduce((s,i)=>s+(i.price*i.qty),0);
+  const discountPct = getDiscount();
+  const discountAmt = subtotal * discountPct / 100;
+  const total = subtotal - discountAmt;
+
+  const badge = document.getElementById('cart-count-badge');
+  if (badge) badge.textContent = APP.cart.reduce((s,i)=>s+i.qty,0);
+
+  const discEl = document.getElementById('discount-amt');
+  if (discEl) discEl.textContent = discountAmt > 0 ? `− ${cur} ${discountAmt.toFixed(2)}` : '';
+  const totalDisp = document.getElementById('cart-total-display');
+  if (totalDisp) totalDisp.textContent = `${cur} ${total.toFixed(2)}`;
+  const totalBtn = document.getElementById('cart-total-btn');
+  if (totalBtn) totalBtn.textContent = APP.cart.length ? `${cur} ${total.toFixed(2)}` : '';
+
+  // Show discount+total rows only when cart has items
+  const footer = document.getElementById('live-cart-footer');
+  if (footer) footer.style.display = APP.cart.length ? 'block' : 'none';
+
+  // Charge button — full opacity + amount when items in cart, dimmed when empty
+  const chargeBtn = document.getElementById('charge-btn');
+  const totalBtnSpan = document.getElementById('cart-total-btn');
+  if (chargeBtn) chargeBtn.style.opacity = APP.cart.length ? '1' : '0.4';
+  if (totalBtnSpan) totalBtnSpan.textContent = APP.cart.length ? `${cur} ${total.toFixed(2)}` : '';
+
+  const cartEl = document.getElementById('live-cart-items');
+  if (!cartEl) return;
+  if (!APP.cart.length) {
+    cartEl.innerHTML = `<div style="text-align:center;padding:40px 24px;color:var(--text3);">
+      <div style="font-size:52px;margin-bottom:12px;">🧃</div>
+      <div style="font-size:16px;font-weight:700;color:var(--text2);margin-bottom:6px;">Start typing to add items</div>
+      <div style="font-size:13px;">Search for any juice above — selected items appear here</div>
+    </div>`;
+    return;
+  }
+  cartEl.innerHTML = APP.cart.map((item,idx) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);background:${idx%2===0?'var(--surface)':'var(--surface2)'};">
+      <span style="font-size:22px;flex-shrink:0;">${item.emoji||'🧃'}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.name}</div>
+        <div style="font-size:11px;color:var(--text3);">${item.size} · ${cur} ${item.price.toFixed(2)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
+        <button onclick="liveCartQty('${item.productId}',-1)" style="width:30px;height:30px;border-radius:50%;background:var(--surface2);border:1.5px solid var(--border);color:var(--danger);font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button>
+        <input type="number" id="cart-qty-input-${item.productId}" value="${item.qty}" min="1" onchange="liveCartQty('${item.productId}','input')" style="width:42px;height:30px;text-align:center;padding:0;font-size:14px;font-weight:700;border:1.5px solid var(--border);border-radius:var(--radius-sm);">
+        <button onclick="liveCartQty('${item.productId}',1)" style="width:30px;height:30px;border-radius:50%;background:var(--primary);border:none;color:white;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>
+      </div>
+      <div style="text-align:right;flex-shrink:0;min-width:70px;">
+        <div style="font-size:14px;font-weight:800;color:var(--primary);">${cur} ${(item.price*item.qty).toFixed(2)}</div>
+        <button onclick="removeCartItem('${item.productId}')" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;padding:0;">remove</button>
+      </div>
+    </div>`).join('');
+}
+
+function updateCartBadge() { renderLiveCart(); }
+function openCart() { if (APP.cart.length) openCartPayment(); else toast('Cart is empty'); }
+function openCartPayment() {
+  if (!APP.cart.length) { toast('Cart is empty'); return; }
+  const discountPct = getDiscount();
+  const subtotal = APP.cart.reduce((s,i)=>s+(i.price*i.qty),0);
+  const discountAmt = subtotal * discountPct / 100;
+  const total = subtotal - discountAmt;
+  openPayment(total, discountAmt);
+}
+function clearCart() {
+  if (!APP.cart.length) return;
+  APP.cart = [];
+  const di = document.getElementById('discount-input');
+  if (di) di.value = '0';
+  renderLiveCart();
+  toast('Cart cleared');
+}
+
+function openCashOut() {
+  const cur = APP.company?.currency||'GMD';
+  const cashSales = APP.sales.reduce((s,x)=>{
+    if (x.payment.method==='cash') return s+x.total;
+    if (x.payment.method==='split') return s+(x.payment.splitCash||0);
+    return s;
+  },0);
+  const totalDeposited = APP.deposits.reduce((s,d)=>s+d.amount,0);
+  const totalCashOut = APP.cashOuts.reduce((s,c)=>s+c.amount,0);
+  const cashInHand = Math.max(0, cashSales - totalDeposited - totalCashOut);
+  showModal(`
+    <div class="modal-title">💸 Cash Out</div>
+    <div style="background:var(--warning-light);border-radius:var(--radius-sm);padding:12px;margin-bottom:16px;">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:4px;">Estimated Cash in Drawer</div>
+      <div style="font-size:28px;font-weight:800;color:var(--warning);">${cur} ${cashInHand.toFixed(2)}</div>
+    </div>
+    <div class="form-group"><label>Amount to Take Out (${cur}) *</label><input type="number" id="co-amount" step="0.01" min="0.01" placeholder="0.00" value="${cashInHand.toFixed(2)}"></div>
+    <div class="form-group"><label>Reason / Note</label><input id="co-note" placeholder="e.g. Staff wages, Supplier payment..."></div>
+    <div class="form-group"><label>Received By</label><input id="co-receiver" placeholder="Name of person receiving cash"></div>
+    <div class="form-group"><label>Date</label><input type="date" id="co-date" value="${today()}"></div>
+    <button class="btn btn-primary" style="background:var(--warning);" onclick="saveCashOut()">💸 Confirm Cash Out</button>
+  `);
+}
+
+function saveCashOut() {
+  const amount = parseFloat(document.getElementById('co-amount').value)||0;
+  const note = document.getElementById('co-note').value.trim();
+  if (amount<=0) { toast('Enter a valid amount'); return; }
+  APP.cashOuts.push({
+    id: genId(), amount, note,
+    receiver: document.getElementById('co-receiver').value.trim(),
+    date: document.getElementById('co-date').value||today(),
+    issuedBy: APP.currentUser.name,
+    timestamp: new Date().toISOString()
+  });
+  saveState();
+  closeModal();
+  toast(`💸 Cash Out of ${fmt(amount)} recorded`);
+}
+
+// ===================== PAYMENT =====================
+let selectedPayment = 'cash';
+
+function openPayment(total, discountAmt=0) {
+  selectedPayment = 'cash';
+  const cur = APP.company?.currency||'GMD';
+  showModal(`
+    <div class="modal-title">💳 Payment</div>
+    <div style="text-align:center;margin-bottom:16px;">
+      ${discountAmt>0?`<div style="font-size:12px;color:var(--danger);">Discount: - ${cur} ${discountAmt.toFixed(2)}</div>`:''}
+      <div style="font-size:13px;color:var(--text3);">Total Amount Due</div>
+      <div style="font-size:36px;font-weight:800;color:var(--primary);">${cur} ${total.toFixed(2)}</div>
+    </div>
+    <div class="payment-methods">
+      <div class="payment-method selected" id="pm-cash" onclick="selectPayment('cash')">
+        <div class="payment-method-icon">💵</div>
+        <div class="payment-method-name">Cash</div>
+        <div class="payment-method-desc">Physical cash</div>
+      </div>
+      <div class="payment-method" id="pm-wave" onclick="selectPayment('wave')">
+        <div class="payment-method-icon">📱</div>
+        <div class="payment-method-name">Wave</div>
+        <div class="payment-method-desc">Mobile Money</div>
+      </div>
+      <div class="payment-method" id="pm-bank" onclick="selectPayment('bank')">
+        <div class="payment-method-icon">🏦</div>
+        <div class="payment-method-name">Bank Transfer</div>
+        <div class="payment-method-desc">Direct transfer</div>
+      </div>
+      <div class="payment-method" id="pm-split" onclick="selectPayment('split')">
+        <div class="payment-method-icon">🔀</div>
+        <div class="payment-method-name">Split Pay</div>
+        <div class="payment-method-desc">Multiple methods</div>
+      </div>
+    </div>
+    <div id="payment-extra-cash" style="display:block;">
+      <div class="form-group"><label>Cash Received (${cur})</label><input type="number" id="cash-received" value="${total.toFixed(2)}" step="0.01" min="0" oninput="updateChange(${total})" placeholder="${total.toFixed(2)}"></div>
+      <div class="summary-row"><span class="summary-label">Change</span><span class="summary-value" id="change-display" style="color:var(--success);font-weight:700;font-size:18px;">${cur} 0.00</span></div>
+    </div>
+    <div id="payment-extra-wave" class="hidden">
+      <div class="form-group"><label>Wave Reference</label><input type="text" id="wave-ref" placeholder="Wave transaction reference"></div>
+      <div class="form-group"><label>Amount Received (${cur})</label><input type="number" id="wave-amount" value="${total.toFixed(2)}" step="0.01"></div>
+    </div>
+    <div id="payment-extra-bank" class="hidden">
+      ${APP.banks.length ? `<div class="form-group"><label>Bank Account</label><select id="bank-select">${APP.banks.map(b=>`<option value="${b.id}">${b.bankName} - ${b.accountName}</option>`).join('')}</select></div>` : `<div style="color:var(--warning);font-size:13px;margin-bottom:12px;">⚠️ No bank accounts. Add one in Banking.</div>`}
+      <div class="form-group"><label>Transfer Reference</label><input type="text" id="bank-ref" placeholder="Bank transfer reference number"></div>
+      <div class="form-group"><label>Amount Confirmed (${cur})</label><input type="number" id="bank-amount" value="${total.toFixed(2)}" step="0.01"></div>
+    </div>
+    <div id="payment-extra-split" class="hidden">
+      <div class="form-group"><label>Cash (${cur})</label><input type="number" id="split-cash" value="0" step="0.01" oninput="updateSplitBalance(${total})"></div>
+      <div class="form-group"><label>Wave (${cur})</label><input type="number" id="split-wave" value="0" step="0.01" oninput="updateSplitBalance(${total})"></div>
+      <div class="form-group"><label>Bank Transfer (${cur})</label><input type="number" id="split-bank" value="${total.toFixed(2)}" step="0.01" oninput="updateSplitBalance(${total})"></div>
+      <div class="summary-row"><span class="summary-label">Remaining</span><span id="split-remaining" style="font-size:14px;font-weight:700;color:var(--danger);">${cur} ${total.toFixed(2)}</span></div>
+    </div>
+    <button class="btn btn-primary" style="margin-top:16px;" onclick="completeSale(${total})">✅ Complete Sale</button>
+    <button class="btn btn-secondary" style="margin-top:8px;" onclick="closeModal()">← Back</button>
+  `);
+}
+
+function selectPayment(method) {
+  selectedPayment = method;
+  document.querySelectorAll('.payment-method').forEach(m=>m.classList.remove('selected'));
+  document.getElementById('pm-'+method).classList.add('selected');
+  ['cash','wave','bank','split'].forEach(m=>{
+    const el = document.getElementById('payment-extra-'+m);
+    if (el) el.classList.toggle('hidden', m!==method);
+  });
+}
+
+function updateChange(total) {
+  const cur = APP.company?.currency||'GMD';
+  const received = parseFloat(document.getElementById('cash-received').value)||0;
+  const change = Math.max(0, received - total);
+  const el = document.getElementById('change-display');
+  if (el) el.textContent = `${cur} ${change.toFixed(2)}`;
+}
+
+function updateSplitBalance(total) {
+  const cur = APP.company?.currency||'GMD';
+  const cash = parseFloat(document.getElementById('split-cash').value)||0;
+  const wave = parseFloat(document.getElementById('split-wave').value)||0;
+  const bank = parseFloat(document.getElementById('split-bank').value)||0;
+  const remaining = total - cash - wave - bank;
+  const el = document.getElementById('split-remaining');
+  if (el) { el.textContent = `${cur} ${Math.abs(remaining).toFixed(2)}`; el.style.color = remaining <= 0 ? 'var(--success)' : 'var(--danger)'; }
+}
+
+function completeSale(total) {
+  let paymentDetails = { method: selectedPayment, total };
+  if (selectedPayment === 'cash') {
+    const received = parseFloat(document.getElementById('cash-received').value)||0;
+    if (received < total) { toast('Cash received is less than total'); return; }
+    paymentDetails.cashReceived = received;
+    paymentDetails.change = received - total;
+  } else if (selectedPayment === 'wave') {
+    paymentDetails.reference = document.getElementById('wave-ref').value;
+    paymentDetails.amountReceived = parseFloat(document.getElementById('wave-amount').value)||0;
+  } else if (selectedPayment === 'bank') {
+    paymentDetails.bankId = document.getElementById('bank-select')?.value;
+    paymentDetails.reference = document.getElementById('bank-ref').value;
+    paymentDetails.amountReceived = parseFloat(document.getElementById('bank-amount').value)||0;
+  } else if (selectedPayment === 'split') {
+    paymentDetails.splitCash = parseFloat(document.getElementById('split-cash').value)||0;
+    paymentDetails.splitWave = parseFloat(document.getElementById('split-wave').value)||0;
+    paymentDetails.splitBank = parseFloat(document.getElementById('split-bank').value)||0;
+  }
+  
+  // Create sale record
+  const subtotalBeforeDiscount = APP.cart.reduce((s,i)=>s+(i.price*i.qty),0);
+  const sale = {
+    id: genId(), type: 'regular',
+    items: JSON.parse(JSON.stringify(APP.cart)),
+    subtotal: subtotalBeforeDiscount,
+    discountAmt: subtotalBeforeDiscount - total,
+    total, payment: paymentDetails,
+    cashierId: APP.currentUser.id,
+    cashierName: APP.currentUser.name,
+    date: today(), time: timeNow(),
+    timestamp: new Date().toISOString()
+  };
+
+  // Deduct stock
+  APP.cart.forEach(item => {
+    const prod = APP.products.find(p=>p.id===item.productId);
+    if (prod) prod.stock -= item.qty;
+  });
+
+  APP.sales.push(sale);
+  APP.cart = [];
+  const di = document.getElementById('discount-input');
+  if (di) di.value = '0';
+  saveState();
+  renderLiveCart();
+  closeModal();
+  toast('✅ Sale completed!');
+  showReceiptModal(sale);
+}
+
+// ===================== BULK SALE =====================
+function openBulkSale() {
+  showModal(`
+    <div class="modal-title">📦 Bulk / Event Sale</div>
+    <div style="background:var(--success-light);border-radius:var(--radius-sm);padding:12px;margin-bottom:16px;font-size:13px;color:var(--success);">
+      Perfect for ceremonies, events, and wholesale orders with flexible pricing.
+    </div>
+    <div class="form-group"><label>Event / Order Description</label><input id="bulk-desc" placeholder="e.g. Wedding at Accra Sports Club"></div>
+    <div class="form-group"><label>Customer Name</label><input id="bulk-customer" placeholder="Customer or organization name"></div>
+    <div id="bulk-items">
+      <div class="card-title" style="margin-bottom:8px;">Items</div>
+      <div id="bulk-item-list"></div>
+      <button class="btn btn-secondary btn-sm" style="margin-top:8px;" onclick="addBulkItem()">+ Add Item</button>
+    </div>
+    <div class="divider" style="margin:16px 0;"></div>
+    <div class="summary-row"><span style="font-size:16px;font-weight:700;">Grand Total</span><span id="bulk-total" style="font-size:22px;font-weight:800;color:var(--primary);">${fmt(0)}</span></div>
+    <button class="btn btn-primary" style="margin-top:16px;" onclick="processBulkSale()">Process Bulk Sale</button>
+  `);
+  addBulkItem();
+}
+
+let bulkItems = [];
+function addBulkItem() {
+  const id = genId();
+  bulkItems.push({ id, productId:'', bottleCount:0, costPerBottle:0 });
+  renderBulkItems();
+}
+
+function renderBulkItems() {
+  const productOptions = APP.products.map(p=>`<option value="${p.id}">${p.name} ${p.size} (${p.stock} in stock)</option>`).join('');
+  document.getElementById('bulk-item-list').innerHTML = bulkItems.map((item,idx)=>`
+    <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:13px;font-weight:700;color:var(--text2);">Item ${idx+1}</span>
+        ${bulkItems.length>1?`<button class="btn btn-danger btn-sm" onclick="removeBulkItem('${item.id}')">Remove</button>`:''}
+      </div>
+      <div class="form-group"><label>Product</label>
+        <select onchange="updateBulkItem('${item.id}','productId',this.value)">
+          <option value="">-- Select product --</option>
+          ${productOptions}
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div class="form-group"><label>No. of Bottles</label>
+          <input type="number" min="1" placeholder="Qty" value="${item.bottleCount||''}" oninput="updateBulkItem('${item.id}','bottleCount',this.value)">
+        </div>
+        <div class="form-group"><label>Cost / Bottle (${APP.company?.currency||'GMD'})</label>
+          <input type="number" min="0" step="0.01" placeholder="Price" value="${item.costPerBottle||''}" oninput="updateBulkItem('${item.id}','costPerBottle',this.value)">
+        </div>
+      </div>
+      <div style="font-size:14px;font-weight:700;color:var(--primary);text-align:right;" id="bulk-item-sub-${item.id}">${fmt(0)}</div>
+    </div>`).join('');
+}
+
+function updateBulkItem(id, field, val) {
+  const item = bulkItems.find(i=>i.id===id);
+  if (!item) return;
+  item[field] = field==='productId' ? val : parseFloat(val)||0;
+  const sub = item.bottleCount * item.costPerBottle;
+  const el = document.getElementById('bulk-item-sub-'+id);
+  if (el) el.textContent = fmt(sub);
+  const total = bulkItems.reduce((s,i)=>s+(i.bottleCount*i.costPerBottle),0);
+  const tel = document.getElementById('bulk-total');
+  if (tel) tel.textContent = fmt(total);
+}
+
+function removeBulkItem(id) {
+  bulkItems = bulkItems.filter(i=>i.id!==id);
+  renderBulkItems();
+}
+
+function processBulkSale() {
+  const desc = document.getElementById('bulk-desc').value.trim();
+  const customer = document.getElementById('bulk-customer').value.trim();
+  if (!bulkItems.some(i=>i.productId && i.bottleCount>0)) { toast('Add at least one item'); return; }
+  const total = bulkItems.reduce((s,i)=>s+(i.bottleCount*i.costPerBottle),0);
+  if (total===0) { toast('Total cannot be zero'); return; }
+  
+  // Show payment for bulk
+  closeModal();
+  const saleData = { desc, customer, items: [...bulkItems], total, type:'bulk' };
+  openBulkPayment(saleData);
+}
+
+function openBulkPayment(saleData) {
+  selectedPayment = 'cash';
+  showModal(`
+    <div class="modal-title">💳 Bulk Sale Payment</div>
+    <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:12px;margin-bottom:16px;">
+      <div style="font-size:13px;color:var(--text3);">${saleData.desc||'Bulk Order'} ${saleData.customer?'· '+saleData.customer:''}</div>
+      <div style="font-size:28px;font-weight:800;color:var(--primary);text-align:center;margin-top:4px;">${fmt(saleData.total)}</div>
+    </div>
+    <div class="payment-methods">
+      <div class="payment-method selected" id="pm-cash" onclick="selectPayment('cash')"><div class="payment-method-icon">💵</div><div class="payment-method-name">Cash</div></div>
+      <div class="payment-method" id="pm-wave" onclick="selectPayment('wave')"><div class="payment-method-icon">📱</div><div class="payment-method-name">Wave</div></div>
+      <div class="payment-method" id="pm-bank" onclick="selectPayment('bank')"><div class="payment-method-icon">🏦</div><div class="payment-method-name">Bank</div></div>
+      <div class="payment-method" id="pm-split" onclick="selectPayment('split')"><div class="payment-method-icon">🔀</div><div class="payment-method-name">Split</div></div>
+    </div>
+    <div id="payment-extra-cash">
+      <div class="form-group"><label>Cash Received</label><input type="number" id="cash-received" value="${saleData.total.toFixed(2)}" step="0.01" oninput="updateChange(${saleData.total})"></div>
+      <div class="summary-row"><span class="summary-label">Change</span><span id="change-display" style="color:var(--success);font-weight:700;">${fmt(0)}</span></div>
+    </div>
+    <div id="payment-extra-wave" class="hidden"><div class="form-group"><label>Wave Reference</label><input id="wave-ref" placeholder="Reference"></div><div class="form-group"><label>Amount (${APP.company?.currency||'GMD'})</label><input type="number" id="wave-amount" value="${saleData.total.toFixed(2)}"></div></div>
+    <div id="payment-extra-bank" class="hidden">${APP.banks.length?`<div class="form-group"><label>Bank</label><select id="bank-select">${APP.banks.map(b=>`<option value="${b.id}">${b.bankName} - ${b.accountName}</option>`).join('')}</select></div>`:'<div style="color:var(--warning);font-size:13px;margin-bottom:12px;">⚠️ No bank accounts.</div>'}<div class="form-group"><label>Reference</label><input id="bank-ref" placeholder="Transfer reference"></div><div class="form-group"><label>Amount (${APP.company?.currency||'GMD'})</label><input type="number" id="bank-amount" value="${saleData.total.toFixed(2)}"></div></div>
+    <div id="payment-extra-split" class="hidden">
+      <div class="form-group"><label>Cash (${APP.company?.currency||'GMD'})</label><input type="number" id="split-cash" value="0" step="0.01" oninput="updateSplitBalance(${saleData.total})"></div>
+      <div class="form-group"><label>Wave (${APP.company?.currency||'GMD'})</label><input type="number" id="split-wave" value="0" step="0.01" oninput="updateSplitBalance(${saleData.total})"></div>
+      <div class="form-group"><label>Bank (${APP.company?.currency||'GMD'})</label><input type="number" id="split-bank" value="${saleData.total.toFixed(2)}" step="0.01" oninput="updateSplitBalance(${saleData.total})"></div>
+      <div class="summary-row"><span class="summary-label">Remaining</span><span id="split-remaining" style="font-size:14px;font-weight:700;color:var(--danger);">${fmt(saleData.total)}</span></div>
+    </div>
+    <button class="btn btn-primary" style="margin-top:16px;" onclick="completeBulkSale(${JSON.stringify(saleData).replace(/"/g,"'")})">Complete Bulk Sale</button>
+  `);
+}
+
+function completeBulkSale(saleData) {
+  // Collect payment
+  let paymentDetails = { method: selectedPayment, total: saleData.total };
+  if (selectedPayment === 'cash') {
+    const received = parseFloat(document.getElementById('cash-received').value)||0;
+    if (received < saleData.total) { toast('Cash received is less than total'); return; }
+    paymentDetails.cashReceived = received;
+    paymentDetails.change = received - saleData.total;
+  }
+  
+  const sale = {
+    id: genId(), type: 'bulk',
+    description: saleData.desc, customer: saleData.customer,
+    items: saleData.items, total: saleData.total,
+    payment: paymentDetails,
+    cashierId: APP.currentUser.id, cashierName: APP.currentUser.name,
+    date: today(), time: timeNow(), timestamp: new Date().toISOString()
+  };
+  
+  // Deduct stock
+  saleData.items.forEach(item => {
+    if (!item.productId) return;
+    const prod = APP.products.find(p=>p.id===item.productId);
+    if (prod) prod.stock = Math.max(0, prod.stock - item.bottleCount);
+  });
+  
+  APP.sales.push(sale);
+  bulkItems = [];
+  saveState();
+  closeModal();
+  toast('✅ Bulk sale completed!');
+  showReceiptModal(sale);
+}
+
+// ===================== RECEIPT =====================
+function showReceiptModal(sale) {
+  const co = APP.company;
+  const currency = co?.currency || 'GMD';
+  const itemsHtml = sale.type === 'regular'
+    ? sale.items.map(i=>`<div class="receipt-row"><span>${i.name} ${i.size} x${i.qty}</span><span>${currency} ${(i.price*i.qty).toFixed(2)}</span></div>`).join('')
+    : sale.items.filter(i=>i.productId&&i.bottleCount>0).map(i=>{
+        const p = APP.products.find(pr=>pr.id===i.productId);
+        return `<div class="receipt-row"><span>${p?p.name:'Item'} x${i.bottleCount}</span><span>${currency} ${(i.bottleCount*i.costPerBottle).toFixed(2)}</span></div>`;
+      }).join('');
+  const methodIcon = {cash:'💵',wave:'📱',bank:'🏦',split:'🔀'}[sale.payment.method]||'';
+  
+  showModal(`
+    <div class="modal-title">🧾 Receipt</div>
+    <div class="receipt">
+      <div class="receipt-center"><strong>${co?.name||'JUICE BAR'}</strong></div>
+      ${co?.receiptHeader?`<div class="receipt-center">${co.receiptHeader}</div>`:''}
+      <div class="receipt-center">${co?.address||''}</div>
+      <div class="receipt-center">${co?.phone||''}</div>
+      <div class="receipt-divider"></div>
+      <div class="receipt-center">${sale.type==='bulk'?'BULK SALE RECEIPT':'SALE RECEIPT'}</div>
+      <div class="receipt-center">#${sale.id.toUpperCase()}</div>
+      <div class="receipt-center">${sale.date} ${sale.time}</div>
+      <div class="receipt-center">Cashier: ${sale.cashierName}</div>
+      ${sale.customer?`<div class="receipt-center">Customer: ${sale.customer}</div>`:''}
+      <div class="receipt-divider"></div>
+      ${itemsHtml}
+      <div class="receipt-divider"></div>
+      <div class="receipt-row"><strong>TOTAL</strong><strong>${currency} ${sale.total.toFixed(2)}</strong></div>
+      <div class="receipt-row"><span>Payment: ${methodIcon} ${sale.payment.method.toUpperCase()}</span></div>
+      ${sale.payment.cashReceived?`<div class="receipt-row"><span>Cash Paid</span><span>${currency} ${sale.payment.cashReceived.toFixed(2)}</span></div><div class="receipt-row"><span>Change</span><span>${currency} ${(sale.payment.change||0).toFixed(2)}</span></div>`:''}
+      ${sale.payment.reference?`<div class="receipt-center">Ref: ${sale.payment.reference}</div>`:''}
+      <div class="receipt-divider"></div>
+      <div class="receipt-center">${co?.receiptFooter||'Thank you!'}</div>
+      ${co?.taxId?`<div class="receipt-center">VAT: ${co.taxId}</div>`:''}
+    </div>
+    <button class="btn btn-primary" style="margin-top:16px;" onclick="printReceipt('${sale.id}')">🖨️ Print Receipt (80mm)</button>
+    <button class="btn btn-secondary" style="margin-top:8px;" onclick="closeModal()">Close</button>
+  `);
+}
+
+function printReceipt(saleId) {
+  const sale = APP.sales.find(s=>s.id===saleId);
+  if (!sale) return;
+  const co = APP.company;
+  const currency = co?.currency||'GMD';
+  const w = 32; // chars for 80mm
+  const line = '-'.repeat(w);
+  const center = s => {
+    const pad = Math.floor((w - s.length) / 2);
+    return ' '.repeat(Math.max(0,pad)) + s;
+  };
+  const row = (l,r) => {
+    const space = Math.max(1, w - l.length - r.length);
+    return l + ' '.repeat(space) + r;
+  };
+  
+  let text = `\n${center(co?.name||'JUICE BAR')}\n`;
+  if (co?.address) text += `${center(co.address)}\n`;
+  if (co?.phone) text += `${center(co.phone)}\n`;
+  text += `${line}\n`;
+  text += `${center(sale.type==='bulk'?'BULK SALE RECEIPT':'SALE RECEIPT')}\n`;
+  text += `${center('#'+sale.id.toUpperCase())}\n`;
+  text += `${center(sale.date+' '+sale.time)}\n`;
+  text += `${center('Cashier: '+sale.cashierName)}\n`;
+  if (sale.customer) text += `${center('Customer: '+sale.customer)}\n`;
+  text += `${line}\n`;
+  
+  if (sale.type === 'regular') {
+    sale.items.forEach(i => { text += `${row(i.name+' x'+i.qty, currency+' '+(i.price*i.qty).toFixed(2))}\n`; });
+  } else {
+    sale.items.filter(i=>i.bottleCount>0).forEach(i => {
+      const p = APP.products.find(pr=>pr.id===i.productId);
+      text += `${row((p?p.name:'Item')+' x'+i.bottleCount, currency+' '+(i.bottleCount*i.costPerBottle).toFixed(2))}\n`;
+    });
+  }
+  
+  text += `${line}\n`;
+  text += `${row('TOTAL', currency+' '+sale.total.toFixed(2))}\n`;
+  text += `${row('Payment:', sale.payment.method.toUpperCase())}\n`;
+  if (sale.payment.cashReceived) {
+    text += `${row('Cash Paid:', currency+' '+sale.payment.cashReceived.toFixed(2))}\n`;
+    text += `${row('Change:', currency+' '+(sale.payment.change||0).toFixed(2))}\n`;
+  }
+  text += `${line}\n`;
+  text += `${center(co?.receiptFooter||'Thank you!')}\n\n`;
+  
+  // Try window.print() with formatted content
+  const printWin = window.open('','_blank','width=320,height=600');
+  printWin.document.write(`<html><head><style>
+    body { font-family: 'Courier New', monospace; font-size: 12px; width: 72mm; margin: 0; padding: 4mm; }
+    pre { white-space: pre-wrap; word-break: break-all; }
+    @media print { @page { margin: 0; size: 80mm auto; } }
+  </style></head><body><pre>${text}</pre><script>window.onload=()=>{window.print();window.close();}<\/script></body></html>`);
+  printWin.document.close();
+  toast('🖨️ Receipt sent to printer');
+}
+
+// ===================== INVENTORY PAGE =====================
+function renderInventoryPage() {
+  renderInventoryList(APP.products);
+}
+
+function renderInventoryList(products) {
+  const list = document.getElementById('inventory-list');
+  if (!products.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📦</div><div class="empty-state-text">No products</div><div class="empty-state-sub">Tap + Add to create your first product</div></div>';
+    return;
+  }
+  list.innerHTML = products.map(p=>`
+    <div class="list-item">
+      <div class="list-item-avatar">${p.emoji||'🧃'}</div>
+      <div class="list-item-info">
+        <div class="list-item-title">${p.name} <span class="pill pill-gray">${p.size}</span></div>
+        <div class="list-item-sub">${p.category} · ${APP.company?.currency||'GMD'} ${p.price.toFixed(2)}</div>
+      </div>
+      <div class="list-item-right">
+        <div class="list-item-amount" style="${p.stock<=p.minStock?'color:var(--danger)':''}">${p.stock} left</div>
+        <div style="display:flex;gap:6px;margin-top:4px;justify-content:flex-end;">
+          <button class="btn btn-secondary btn-sm" onclick="openEditProduct('${p.id}')">Edit</button>
+          <button class="btn btn-sm" style="background:var(--success-light);color:var(--success);" onclick="openRestockProduct('${p.id}')">+Stock</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function searchProducts(q) {
+  const filtered = APP.products.filter(p => p.name.toLowerCase().includes(q.toLowerCase()) || p.category.toLowerCase().includes(q.toLowerCase()));
+  renderInventoryList(filtered);
+}
+
+function openAddProduct() {
+  showModal(`
+    <div class="modal-title">➕ Add Product</div>
+    <div class="form-group"><label>Product Name *</label><input id="p-name" placeholder="e.g. Fresh Orange Juice"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="form-group"><label>Size / Volume *</label><input id="p-size" placeholder="e.g. 500ml"></div>
+      <div class="form-group"><label>Category</label><input id="p-cat" placeholder="e.g. Fresh" list="cat-list">
+        <datalist id="cat-list">${[...new Set(APP.products.map(p=>p.category))].map(c=>`<option value="${c}">`).join('')}</datalist>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="form-group"><label>Price (${APP.company?.currency||'GMD'})*</label><input id="p-price" type="number" min="0" step="0.01" placeholder="0.00"></div>
+      <div class="form-group"><label>Initial Stock *</label><input id="p-stock" type="number" min="0" placeholder="0"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="form-group"><label>Low Stock Alert</label><input id="p-min" type="number" min="0" placeholder="5"></div>
+      <div class="form-group"><label>Emoji Icon</label><input id="p-emoji" placeholder="🧃" maxlength="2"></div>
+    </div>
+    <button class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+  `);
+}
+
+function saveProduct(editId=null) {
+  const name = document.getElementById('p-name').value.trim();
+  const size = document.getElementById('p-size').value.trim();
+  const price = parseFloat(document.getElementById('p-price').value)||0;
+  const stock = parseInt(document.getElementById('p-stock').value)||0;
+  if (!name||!size||price<=0) { toast('Name, size, and price are required'); return; }
+  
+  const data = {
+    name, size, category: document.getElementById('p-cat').value.trim()||'General',
+    price, stock, minStock: parseInt(document.getElementById('p-min').value)||5,
+    emoji: document.getElementById('p-emoji').value||'🧃'
+  };
+  
+  if (editId) {
+    const idx = APP.products.findIndex(p=>p.id===editId);
+    if (idx>=0) APP.products[idx] = { ...APP.products[idx], ...data };
+  } else {
+    APP.products.push({ id: genId(), ...data });
+  }
+  saveState();
+  closeModal();
+  renderInventoryPage();
+  renderSellPage();
+  toast(editId ? '✅ Product updated' : '✅ Product added');
+}
+
+function openEditProduct(pid) {
+  const p = APP.products.find(pr=>pr.id===pid);
+  if (!p) return;
+  showModal(`
+    <div class="modal-title">✏️ Edit Product</div>
+    <div class="form-group"><label>Product Name</label><input id="p-name" value="${p.name}"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="form-group"><label>Size</label><input id="p-size" value="${p.size}"></div>
+      <div class="form-group"><label>Category</label><input id="p-cat" value="${p.category}"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="form-group"><label>Price (${APP.company?.currency||'GMD'})</label><input id="p-price" type="number" value="${p.price}"></div>
+      <div class="form-group"><label>Current Stock</label><input id="p-stock" type="number" value="${p.stock}"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="form-group"><label>Low Stock Alert</label><input id="p-min" type="number" value="${p.minStock||5}"></div>
+      <div class="form-group"><label>Emoji</label><input id="p-emoji" value="${p.emoji||'🧃'}"></div>
+    </div>
+    <button class="btn btn-primary" onclick="saveProduct('${pid}')">Update Product</button>
+    <button class="btn btn-danger" style="margin-top:8px;" onclick="deleteProduct('${pid}')">Delete Product</button>
+  `);
+}
+
+function deleteProduct(pid) {
+  if (!confirm('Delete this product?')) return;
+  APP.products = APP.products.filter(p=>p.id!==pid);
+  saveState(); closeModal(); renderInventoryPage();
+  toast('Product deleted');
+}
+
+function openRestockProduct(pid) {
+  const p = APP.products.find(pr=>pr.id===pid);
+  if (!p) return;
+  showModal(`
+    <div class="modal-title">📦 Restock: ${p.name}</div>
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:32px;">${p.emoji||'🧃'}</div>
+      <div style="font-size:14px;color:var(--text3);">Current stock: <strong>${p.stock}</strong></div>
+    </div>
+    <div class="form-group"><label>Add Quantity</label><input type="number" id="restock-qty" min="1" placeholder="How many to add?"></div>
+    <div class="form-group"><label>Unit Cost (optional, for accounting)</label><input type="number" id="restock-cost" min="0" step="0.01" placeholder="Cost per unit"></div>
+    <button class="btn btn-primary" onclick="saveRestock('${pid}')">Add Stock</button>
+  `);
+}
+
+function saveRestock(pid) {
+  const qty = parseInt(document.getElementById('restock-qty').value)||0;
+  const cost = parseFloat(document.getElementById('restock-cost').value)||0;
+  if (qty<=0) { toast('Enter a valid quantity'); return; }
+  const p = APP.products.find(pr=>pr.id===pid);
+  if (p) {
+    p.stock += qty;
+    if (cost > 0) {
+      APP.expenses.push({
+        id: genId(), type: 'materials', description: `Restock: ${p.name} (${qty} units)`,
+        amount: cost * qty, date: today(), timestamp: new Date().toISOString()
+      });
+    }
+  }
+  saveState(); closeModal(); renderInventoryPage();
+  toast(`✅ Added ${qty} units to ${p.name}`);
+}
+
+// ===================== SALES PAGE =====================
+function renderSalesPage() {
+  const isAdmin = APP.currentUser.role === 'admin';
+  document.getElementById('sales-page-title').textContent = isAdmin ? 'Sales History' : 'My Sales';
+  
+  const filteredSales = isAdmin ? APP.sales : APP.sales.filter(s=>s.cashierId===APP.currentUser.id);
+  const todaySales = filteredSales.filter(s=>s.date===today());
+  const todayTotal = todaySales.reduce((s,x)=>s+x.total,0);
+  const todayCash = todaySales.reduce((s,x)=>{
+    if (x.payment.method==='cash') return s+x.total;
+    if (x.payment.method==='split') return s+(x.payment.splitCash||0);
+    return s;
+  },0);
+  const todayCashOuts = APP.cashOuts.filter(c=>c.date===today()).reduce((s,c)=>s+c.amount,0);
+  const todayDeposits = APP.deposits.filter(d=>d.date===today()).reduce((s,d)=>s+d.amount,0);
+  const cashInHand = Math.max(0, todayCash - todayCashOuts - todayDeposits);
+  
+  let html = `
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Today's Total</div>
+        <div class="stat-value">${fmt(todayTotal)}</div>
+        <div class="stat-sub">${todaySales.length} transactions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Cash in Drawer</div>
+        <div class="stat-value tx-cash">${fmt(cashInHand)}</div>
+        <div class="stat-sub">After cash outs</div>
+      </div>
+    </div>
+    <div style="padding:0 16px;margin-bottom:4px;">
+      <div style="background:var(--success-light);border-radius:var(--radius-sm);padding:12px;font-size:13px;color:var(--success);">
+        📋 End of Day: Cash drawer should contain <strong>${fmt(cashInHand)}</strong> (cash sales minus any cash outs today).
+      </div>
+    </div>`;
+
+  if (isAdmin) {
+    const adminHtml = generateAdminSalesView(filteredSales);
+    html += adminHtml;
+  }
+
+  html += `<div class="section-header"><div class="section-title">${isAdmin?'All Transactions':'My Transactions'}</div></div>`;
+  
+  if (!filteredSales.length) {
+    html += '<div class="empty-state"><div class="empty-state-icon">📊</div><div class="empty-state-text">No sales yet</div><div class="empty-state-sub">Sales will appear here after checkout</div></div>';
+  } else {
+    const sorted = [...filteredSales].sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+    html += '<div style="padding:0 16px;">' + sorted.map(s=>{
+      const methodIcon = {cash:'💵',wave:'📱',bank:'🏦',split:'🔀'}[s.payment.method]||'';
+      return `<div class="list-item" style="border-radius:var(--radius);margin-bottom:8px;box-shadow:var(--shadow);" onclick="viewSaleDetail('${s.id}')">
+        <div class="list-item-avatar" style="background:${s.type==='bulk'?'var(--warning-light)':'var(--success-light)'};">${s.type==='bulk'?'📦':'🧃'}</div>
+        <div class="list-item-info">
+          <div class="list-item-title">${s.type==='bulk'?(s.description||'Bulk Sale'):'Regular Sale'} ${methodIcon}</div>
+          <div class="list-item-sub">${s.date} ${s.time} · ${s.cashierName}</div>
+        </div>
+        <div class="list-item-right">
+          <div class="list-item-amount">${fmt(s.total)}</div>
+          <div class="list-item-meta">${s.items?.length||0} item(s)</div>
+        </div>
+      </div>`;
+    }).join('') + '</div>';
+  }
+  
+  document.getElementById('sales-content').innerHTML = html;
+}
+
+function generateAdminSalesView(sales) {
+  const cashiers = {};
+  sales.forEach(s => {
+    if (!cashiers[s.cashierId]) cashiers[s.cashierId] = { name:s.cashierName, total:0, count:0 };
+    cashiers[s.cashierId].total += s.total;
+    cashiers[s.cashierId].count++;
+  });
+  if (!Object.keys(cashiers).length) return '';
+  return `<div class="section-header"><div class="section-title">By Cashier</div></div>
+    <div style="padding:0 16px 8px;">` +
+    Object.entries(cashiers).map(([id,c])=>`
+      <div class="list-item" style="border-radius:var(--radius);margin-bottom:6px;box-shadow:var(--shadow);">
+        <div class="list-item-avatar">${c.name.charAt(0).toUpperCase()}</div>
+        <div class="list-item-info"><div class="list-item-title">${c.name}</div><div class="list-item-sub">${c.count} transactions</div></div>
+        <div class="list-item-amount">${fmt(c.total)}</div>
+      </div>`).join('') + '</div>';
+}
+
+function viewSaleDetail(saleId) {
+  const sale = APP.sales.find(s=>s.id===saleId);
+  if (!sale) return;
+  showReceiptModal(sale);
+}
+
+// ===================== BANKING PAGE =====================
+function renderBankingPage() {
+  const allSales = APP.sales;
+  const totalRevenue = allSales.reduce((s,x)=>s+x.total,0);
+  const cashSales = allSales.reduce((s,x)=>{
+    if (x.payment.method==='cash') return s+x.total;
+    if (x.payment.method==='split') return s+(x.payment.splitCash||0);
+    return s;
+  },0);
+  const waveSales = allSales.reduce((s,x)=>{
+    if (x.payment.method==='wave') return s+x.total;
+    if (x.payment.method==='split') return s+(x.payment.splitWave||0);
+    return s;
+  },0);
+  const bankSales = allSales.reduce((s,x)=>{
+    if (x.payment.method==='bank') return s+x.total;
+    if (x.payment.method==='split') return s+(x.payment.splitBank||0);
+    return s;
+  },0);
+  const totalDeposited = APP.deposits.reduce((s,d)=>s+d.amount,0);
+  const totalExpenses = APP.expenses.reduce((s,x)=>s+x.amount,0);
+  const totalCashOuts = APP.cashOuts.reduce((s,c)=>s+c.amount,0);
+
+  // Cash in hand = cash sales minus what's been deposited, cashed out, or paid as expenses from cash
+  const cashUndeposited = Math.max(0, cashSales - totalDeposited - totalCashOuts);
+  // Expected in bank = bank transfer sales + cash deposits made
+  const expectedInBank = bankSales + totalDeposited;
+  // Net balance after all outflows
+  const netBalance = totalRevenue - totalExpenses - totalDeposited - totalCashOuts;
+
+  let html = `
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Total Revenue</div><div class="stat-value">${fmt(totalRevenue)}</div><div class="stat-sub">All time</div></div>
+      <div class="stat-card"><div class="stat-label">Deposited to Bank</div><div class="stat-value" style="color:var(--info);">${fmt(totalDeposited)}</div><div class="stat-sub">Cash banked</div></div>
+      <div class="stat-card"><div class="stat-label">Cash in Drawer</div><div class="stat-value tx-cash">${fmt(cashUndeposited)}</div><div class="stat-sub">Undeposited cash</div></div>
+      <div class="stat-card"><div class="stat-label">Expected in Bank</div><div class="stat-value tx-bank">${fmt(expectedInBank)}</div><div class="stat-sub">Transfers + deposits</div></div>
+    </div>
+    <div style="padding:0 16px 12px;">
+      <div class="card">
+        <div class="card-title">Money Flow</div>
+        <div class="summary-row"><span class="summary-label">💰 Total Revenue</span><span class="summary-value" style="color:var(--success);font-weight:700;">+ ${fmt(totalRevenue)}</span></div>
+        <div class="divider"></div>
+        <div class="summary-row"><span class="summary-label">  └ 💵 Cash</span><span class="summary-value tx-cash">${fmt(cashSales)}</span></div>
+        <div class="summary-row"><span class="summary-label">  └ 📱 Wave</span><span class="summary-value tx-wave">${fmt(waveSales)}</span></div>
+        <div class="summary-row"><span class="summary-label">  └ 🏦 Bank Transfer</span><span class="summary-value tx-bank">${fmt(bankSales)}</span></div>
+        <div class="divider"></div>
+        <div class="summary-row"><span class="summary-label">📉 Expenses Paid</span><span class="summary-value" style="color:var(--danger);">− ${fmt(totalExpenses)}</span></div>
+        <div class="summary-row"><span class="summary-label">🏦 Deposited to Bank</span><span class="summary-value" style="color:var(--info);">− ${fmt(totalDeposited)}</span></div>
+        <div class="summary-row"><span class="summary-label">💸 Cash Outs</span><span class="summary-value" style="color:var(--warning);">− ${fmt(totalCashOuts)}</span></div>
+        <div class="divider"></div>
+        <div class="summary-row" style="background:${netBalance>=0?'var(--success-light)':'var(--danger-light)'};padding:8px;border-radius:var(--radius-sm);">
+          <span style="font-weight:800;color:${netBalance>=0?'var(--success)':'var(--danger)'};">Net Balance</span>
+          <span style="font-size:18px;font-weight:800;color:${netBalance>=0?'var(--success)':'var(--danger)'};">${fmt(netBalance)}</span>
+        </div>
+        <div style="margin-top:8px;background:var(--warning-light);padding:8px;border-radius:var(--radius-sm);">
+          <div class="summary-row" style="padding:0;">
+            <span style="font-weight:700;color:var(--warning);">💰 Cash Still in Drawer</span>
+            <span style="font-size:16px;font-weight:800;color:var(--warning);">${fmt(cashUndeposited)}</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  if (APP.banks.length) {
+    html += `<div class="section-header"><div class="section-title">Bank Accounts</div></div><div style="padding:0 16px 12px;">` +
+      APP.banks.map(b=>`
+        <div class="bank-card" style="margin-bottom:10px;">
+          <div class="bank-name">${b.bankName}</div>
+          <div class="bank-account">${b.accountNumber||'•••• •••• ••••'}</div>
+          <div class="bank-holder">${b.accountName}</div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.3);" onclick="openDeposit('${b.id}')">+ Deposit</button>
+            <button class="btn btn-sm" style="background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2);" onclick="viewBankHistory('${b.id}')">History</button>
+          </div>
+        </div>`).join('') + '</div>';
+  } else {
+    html += '<div class="empty-state"><div class="empty-state-icon">🏦</div><div class="empty-state-text">No bank accounts</div><div class="empty-state-sub">Tap + Bank to add one</div></div>';
+  }
+
+  // Recent deposits
+  if (APP.deposits.length) {
+    html += `<div class="section-header"><div class="section-title">Recent Deposits</div></div><div style="padding:0 16px;">` +
+      [...APP.deposits].reverse().slice(0,10).map(d=>{
+        const bank = APP.banks.find(b=>b.id===d.bankId);
+        return `<div class="list-item" style="border-radius:var(--radius);margin-bottom:6px;box-shadow:var(--shadow);">
+          <div class="list-item-avatar" style="background:var(--info-light);color:var(--info);">🏦</div>
+          <div class="list-item-info"><div class="list-item-title">${bank?.bankName||'Bank'} Deposit</div><div class="list-item-sub">${d.date} · ${d.note||'Bank deposit'}</div></div>
+          <div class="list-item-amount" style="color:var(--info);">${fmt(d.amount)}</div>
+        </div>`;
+      }).join('') + '</div>';
+  }
+
+  document.getElementById('banking-content').innerHTML = html;
+}
+
+function openAddBank() {
+  showModal(`
+    <div class="modal-title">🏦 Add Bank Account</div>
+    <div class="form-group"><label>Bank Name *</label><input id="b-name" placeholder="e.g. GCB Bank, Ecobank"></div>
+    <div class="form-group"><label>Account Name *</label><input id="b-aname" placeholder="Account holder name"></div>
+    <div class="form-group"><label>Account Number</label><input id="b-anum" placeholder="Account number"></div>
+    <div class="form-group"><label>Branch (optional)</label><input id="b-branch" placeholder="Branch name"></div>
+    <button class="btn btn-primary" onclick="saveBank()">Add Bank</button>
+  `);
+}
+
+function saveBank() {
+  const name = document.getElementById('b-name').value.trim();
+  const aname = document.getElementById('b-aname').value.trim();
+  if (!name||!aname) { toast('Bank name and account name required'); return; }
+  APP.banks.push({
+    id: genId(), bankName: name, accountName: aname,
+    accountNumber: document.getElementById('b-anum').value.trim(),
+    branch: document.getElementById('b-branch').value.trim(),
+    createdAt: new Date().toISOString()
+  });
+  saveState(); closeModal(); renderBankingPage();
+  toast('✅ Bank account added');
+}
+
+function openDeposit(bankId) {
+  const bank = APP.banks.find(b=>b.id===bankId);
+  showModal(`
+    <div class="modal-title">💰 Make Deposit</div>
+    <div style="text-align:center;margin-bottom:16px;color:var(--text3);font-size:14px;">Depositing to: <strong>${bank?.bankName}</strong></div>
+    <div class="form-group"><label>Amount (${APP.company?.currency||'GMD'}) *</label><input type="number" id="dep-amount" min="0.01" step="0.01" placeholder="0.00"></div>
+    <div class="form-group"><label>Date</label><input type="date" id="dep-date" value="${today()}"></div>
+    <div class="form-group"><label>Reference / Note</label><input id="dep-note" placeholder="e.g. Weekly cash deposit"></div>
+    <button class="btn btn-primary" onclick="saveDeposit('${bankId}')">Record Deposit</button>
+  `);
+}
+
+function saveDeposit(bankId) {
+  const amount = parseFloat(document.getElementById('dep-amount').value)||0;
+  if (amount<=0) { toast('Enter valid amount'); return; }
+  APP.deposits.push({
+    id: genId(), bankId, amount,
+    date: document.getElementById('dep-date').value || today(),
+    note: document.getElementById('dep-note').value.trim(),
+    timestamp: new Date().toISOString()
+  });
+  saveState();
+  closeModal();
+  renderBankingPage(); // re-render immediately so totals update live
+  toast(`✅ Deposit of ${fmt(amount)} recorded`);
+}
+
+function viewBankHistory(bankId) {
+  const bank = APP.banks.find(b=>b.id===bankId);
+  const deps = APP.deposits.filter(d=>d.bankId===bankId);
+  const total = deps.reduce((s,d)=>s+d.amount,0);
+  showModal(`
+    <div class="modal-title">📋 ${bank?.bankName} History</div>
+    <div class="summary-row" style="margin-bottom:16px;"><span>Total Deposited</span><span style="font-size:20px;font-weight:800;color:var(--info);">${fmt(total)}</span></div>
+    ${deps.length ? deps.reverse().map(d=>`
+      <div class="summary-row" style="border-bottom:1px solid var(--border);padding:10px 0;">
+        <div><div style="font-size:14px;font-weight:600;">${fmt(d.amount)}</div><div style="font-size:12px;color:var(--text3);">${d.date} · ${d.note||'Deposit'}</div></div>
+        <span class="pill pill-info">Deposit</span>
+      </div>`).join('') : '<div class="empty-state"><div class="empty-state-text">No deposits yet</div></div>'}
+  `);
+}
+
+// ===================== ACCOUNTING PAGE =====================
+function renderAccountingPage() {
+  const cur = APP.company?.currency||'GMD';
+  const totalRevenue = APP.sales.reduce((s,x)=>s+x.total,0);
+  const totalExpenses = APP.expenses.reduce((s,x)=>s+x.amount,0);
+  const totalDeposits = APP.deposits.reduce((s,d)=>s+d.amount,0);
+  const totalCashOuts = APP.cashOuts.reduce((s,c)=>s+c.amount,0);
+  // Net cash position: Revenue minus all outflows
+  const netProfit = totalRevenue - totalExpenses;
+  const netCashPosition = totalRevenue - totalExpenses - totalDeposits - totalCashOuts;
+
+  const expByType = {};
+  APP.expenses.forEach(e => {
+    if (!expByType[e.type]) expByType[e.type] = 0;
+    expByType[e.type] += e.amount;
+  });
+
+  let html = `
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Total Revenue</div><div class="stat-value">${fmt(totalRevenue)}</div><div class="stat-sub">All sales</div></div>
+      <div class="stat-card"><div class="stat-label">Total Expenses</div><div class="stat-value" style="color:var(--danger);">${fmt(totalExpenses)}</div><div class="stat-sub">All costs</div></div>
+      <div class="stat-card"><div class="stat-label">Gross Profit</div><div class="stat-value" style="color:${netProfit>=0?'var(--success)':'var(--danger)'};">${fmt(netProfit)}</div><div class="stat-sub">Revenue − Expenses</div></div>
+      <div class="stat-card"><div class="stat-label">Net Cash on Hand</div><div class="stat-value" style="color:${netCashPosition>=0?'var(--warning)':'var(--danger)'};">${fmt(Math.max(0,netCashPosition))}</div><div class="stat-sub">After all outflows</div></div>
+    </div>
+    <div style="padding:0 16px 12px;">
+      <div class="card">
+        <div class="card-title">Full Ledger Summary</div>
+        <div class="summary-row"><span class="summary-label">💰 Total Sales Revenue</span><span class="summary-value" style="color:var(--success);font-weight:700;">+ ${fmt(totalRevenue)}</span></div>
+        <div class="divider"></div>
+        <div class="summary-row"><span class="summary-label">📉 All Expenses</span><span class="summary-value" style="color:var(--danger);">− ${fmt(totalExpenses)}</span></div>
+        <div class="summary-row"><span class="summary-label">🏦 Deposited to Bank</span><span class="summary-value" style="color:var(--info);">− ${fmt(totalDeposits)}</span></div>
+        <div class="summary-row"><span class="summary-label">💸 Cash Outs</span><span class="summary-value" style="color:var(--warning);">− ${fmt(totalCashOuts)}</span></div>
+        <div class="divider"></div>
+        <div class="summary-row" style="background:var(--success-light);padding:10px;border-radius:var(--radius-sm);">
+          <span style="font-size:15px;font-weight:800;color:var(--success);">Gross Profit</span>
+          <span style="font-size:18px;font-weight:800;color:${netProfit>=0?'var(--success)':'var(--danger)'};">${fmt(netProfit)}</span>
+        </div>
+      </div>
+    </div>`;
+
+  // Expense breakdown
+  if (Object.keys(expByType).length) {
+    html += `<div style="padding:0 16px 12px;"><div class="card"><div class="card-title">Expenses by Category</div>
+      ${Object.entries(expByType).map(([type,amt])=>`<div class="summary-row"><span class="summary-label">${type.charAt(0).toUpperCase()+type.slice(1)}</span><span class="summary-value" style="color:var(--danger);">${fmt(amt)}</span></div>`).join('')}
+    </div></div>`;
+  }
+
+  // Cash Outs history
+  if (APP.cashOuts.length) {
+    html += `<div class="section-header"><div class="section-title">Cash Outs</div></div><div style="padding:0 16px 8px;">` +
+      [...APP.cashOuts].reverse().map(c=>`
+        <div class="list-item" style="border-radius:var(--radius);margin-bottom:6px;box-shadow:var(--shadow);">
+          <div class="list-item-avatar" style="background:var(--warning-light);color:var(--warning);">💸</div>
+          <div class="list-item-info">
+            <div class="list-item-title">${c.note||'Cash Out'}${c.receiver?' → '+c.receiver:''}</div>
+            <div class="list-item-sub">${c.date} · by ${c.issuedBy}</div>
+          </div>
+          <div class="list-item-amount" style="color:var(--warning);">- ${fmt(c.amount)}</div>
+        </div>`).join('') + '</div>';
+  }
+
+  // Expense history
+  html += `<div class="section-header"><div class="section-title">Expense History</div></div><div style="padding:0 16px 8px;">`;
+  if (!APP.expenses.length) {
+    html += '<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">No expenses</div><div class="empty-state-sub">Tap + Expense to record</div></div>';
+  } else {
+    html += [...APP.expenses].reverse().map(e=>`
+      <div class="list-item" style="border-radius:var(--radius);margin-bottom:6px;box-shadow:var(--shadow);">
+        <div class="list-item-avatar" style="background:var(--danger-light);color:var(--danger);">📉</div>
+        <div class="list-item-info">
+          <div class="list-item-title">${e.description}</div>
+          <div class="list-item-sub">${e.date} · ${e.type}</div>
+        </div>
+        <div class="list-item-amount" style="color:var(--danger);">- ${fmt(e.amount)}</div>
+      </div>`).join('');
+  }
+  html += '</div>';
+  document.getElementById('accounting-content').innerHTML = html;
+}
+
+function openAddExpense() {
+  showModal(`
+    <div class="modal-title">📉 Record Expense</div>
+    <div class="form-group"><label>Description *</label><input id="e-desc" placeholder="e.g. Staff salary for March"></div>
+    <div class="form-group"><label>Amount (${APP.company?.currency||'GMD'}) *</label><input type="number" id="e-amount" min="0.01" step="0.01" placeholder="0.00"></div>
+    <div class="form-group"><label>Category</label>
+      <select id="e-type">
+        <option value="materials">Materials / Ingredients</option>
+        <option value="staff">Staff / Salary</option>
+        <option value="utilities">Utilities / Bills</option>
+        <option value="rent">Rent</option>
+        <option value="equipment">Equipment</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Date</label><input type="date" id="e-date" value="${today()}"></div>
+    <div class="form-group"><label>Receipt / Reference (optional)</label><input id="e-ref" placeholder="Receipt number or reference"></div>
+    <button class="btn btn-primary" onclick="saveExpense()">Save Expense</button>
+  `);
+}
+
+function saveExpense() {
+  const desc = document.getElementById('e-desc').value.trim();
+  const amount = parseFloat(document.getElementById('e-amount').value)||0;
+  if (!desc||amount<=0) { toast('Description and amount required'); return; }
+  APP.expenses.push({
+    id: genId(), description: desc, amount,
+    type: document.getElementById('e-type').value,
+    date: document.getElementById('e-date').value||today(),
+    reference: document.getElementById('e-ref').value.trim(),
+    timestamp: new Date().toISOString()
+  });
+  saveState(); closeModal(); renderAccountingPage();
+  toast('✅ Expense recorded');
+}
+
+// ===================== SETTINGS PAGE =====================
+function renderSettingsPage() {
+  const isAdmin = APP.currentUser.role === 'admin';
+  let html = `
+    <div style="padding:16px;">
+      <div class="card" style="margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:50px;height:50px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;">
+            ${APP.currentUser.name.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <div style="font-size:16px;font-weight:700;">${APP.currentUser.name}</div>
+            <div style="font-size:13px;color:var(--text3);">${APP.currentUser.username} · <span class="pill pill-${isAdmin?'warning':'success'}">${APP.currentUser.role}</span></div>
+          </div>
+        </div>
+        <div class="divider" style="margin:12px 0;"></div>
+        <button class="btn btn-secondary" onclick="openChangePassword()" style="margin-bottom:8px;">🔑 Change Password</button>
+        <button class="btn btn-danger" onclick="logout()">Sign Out</button>
+      </div>`;
+
+  if (isAdmin) {
+    html += `
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title">Business Settings</div>
+        <button class="btn btn-secondary" style="margin-bottom:8px;" onclick="openEditCompany()">🏢 Edit Company Info</button>
+        <button class="btn btn-secondary" onclick="openPrinterSettings()">🖨️ Printer Settings</button>
+      </div>
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title">User Management</div>
+        <button class="btn btn-secondary" style="margin-bottom:8px;" onclick="openUserManagement()">👥 Manage Users</button>
+        <button class="btn btn-accent" onclick="openAddUser()">➕ Add Cashier</button>
+      </div>
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title">Data & Reports</div>
+        <button class="btn btn-secondary" style="margin-bottom:8px;" onclick="exportData()">📤 Export All Data</button>
+        <button class="btn btn-secondary" onclick="openDailySummary()">📊 Daily Summary Report</button>
+      </div>`;
+  }
+
+  html += `<div style="text-align:center;padding-top:8px;color:var(--text3);font-size:12px;">JuicePOS v1.0 · Made with ❤️<br>${APP.company?.name||'Juice Bar'}</div></div>`;
+  document.getElementById('settings-content').innerHTML = html;
+}
+
+function openChangePassword() {
+  showModal(`
+    <div class="modal-title">🔑 Change Password</div>
+    <div class="form-group"><label>Current Password</label><input type="password" id="cp-current" placeholder="Current password"></div>
+    <div class="form-group"><label>New Password</label><input type="password" id="cp-new" placeholder="New password (min 6 chars)"></div>
+    <div class="form-group"><label>Confirm New Password</label><input type="password" id="cp-confirm" placeholder="Repeat new password"></div>
+    <button class="btn btn-primary" onclick="savePassword()">Update Password</button>
+    <div id="cp-err" style="color:var(--danger);font-size:13px;text-align:center;margin-top:8px;"></div>
+  `);
+}
+
+function savePassword() {
+  const current = document.getElementById('cp-current').value;
+  const newPass = document.getElementById('cp-new').value;
+  const confirm = document.getElementById('cp-confirm').value;
+  const errEl = document.getElementById('cp-err');
+  if (current !== APP.currentUser.password) { errEl.textContent = 'Current password is incorrect'; return; }
+  if (newPass.length < 6) { errEl.textContent = 'Password must be at least 6 characters'; return; }
+  if (newPass !== confirm) { errEl.textContent = 'New passwords do not match'; return; }
+  const idx = APP.users.findIndex(u=>u.id===APP.currentUser.id);
+  if (idx>=0) { APP.users[idx].password = newPass; APP.currentUser.password = newPass; }
+  saveState(); closeModal(); toast('✅ Password updated');
+}
+
+function openUserManagement() {
+  const users = APP.users;
+  showModal(`
+    <div class="modal-title">👥 Users</div>
+    ${users.map(u=>`
+      <div class="list-item">
+        <div class="list-item-avatar">${u.name.charAt(0).toUpperCase()}</div>
+        <div class="list-item-info">
+          <div class="list-item-title">${u.name} <span class="pill pill-${u.role==='admin'?'warning':'success'}">${u.role}</span></div>
+          <div class="list-item-sub">@${u.username} · ${u.active?'Active':'Inactive'}</div>
+        </div>
+        ${u.id !== APP.currentUser.id ? `<button class="btn btn-secondary btn-sm" onclick="openEditUser('${u.id}')">Edit</button>` : '<span class="pill pill-gray">You</span>'}
+      </div>`).join('')}
+  `);
+}
+
+function openAddUser() {
+  showModal(`
+    <div class="modal-title">➕ Add Cashier</div>
+    <div class="form-group"><label>Full Name *</label><input id="u-name" placeholder="Cashier's full name"></div>
+    <div class="form-group"><label>Username *</label><input id="u-uname" placeholder="Login username (no spaces)"></div>
+    <div class="form-group"><label>Password *</label><input type="password" id="u-pass" placeholder="Min 6 characters"></div>
+    <div class="form-group"><label>Role</label>
+      <select id="u-role"><option value="cashier">Cashier</option><option value="admin">Admin</option></select>
+    </div>
+    <button class="btn btn-primary" onclick="saveUser()">Add User</button>
+    <div id="u-err" style="color:var(--danger);font-size:13px;text-align:center;margin-top:8px;"></div>
+  `);
+}
+
+function saveUser() {
+  const name = document.getElementById('u-name').value.trim();
+  const uname = document.getElementById('u-uname').value.trim().replace(/\s/g,'');
+  const pass = document.getElementById('u-pass').value;
+  const role = document.getElementById('u-role').value;
+  const err = document.getElementById('u-err');
+  if (!name||!uname||!pass) { err.textContent = 'All fields required'; return; }
+  if (pass.length<6) { err.textContent = 'Password min 6 characters'; return; }
+  if (APP.users.find(u=>u.username.toLowerCase()===uname.toLowerCase())) { err.textContent = 'Username already exists'; return; }
+  APP.users.push({ id:genId(), name, username:uname, password:pass, role, active:true, createdAt:new Date().toISOString() });
+  saveState(); closeModal(); toast('✅ User added');
+}
+
+function openEditUser(uid) {
+  const u = APP.users.find(x=>x.id===uid);
+  if (!u) return;
+  showModal(`
+    <div class="modal-title">✏️ Edit User: ${u.name}</div>
+    <div class="form-group"><label>Full Name</label><input id="eu-name" value="${u.name}"></div>
+    <div class="form-group"><label>Role</label><select id="eu-role"><option value="cashier"${u.role==='cashier'?' selected':''}>Cashier</option><option value="admin"${u.role==='admin'?' selected':''}>Admin</option></select></div>
+    <div class="form-group"><label>Status</label><select id="eu-active"><option value="true"${u.active?' selected':''}>Active</option><option value="false"${!u.active?' selected':''}>Inactive</option></select></div>
+    <div class="divider-label">Reset Password</div>
+    <div class="form-group"><label>New Password (leave blank to keep)</label><input type="password" id="eu-pass" placeholder="New password"></div>
+    <button class="btn btn-primary" onclick="updateUser('${uid}')">Update User</button>
+    <button class="btn btn-danger" style="margin-top:8px;" onclick="deleteUser('${uid}')">Delete User</button>
+  `);
+}
+
+function updateUser(uid) {
+  const idx = APP.users.findIndex(u=>u.id===uid);
+  if (idx<0) return;
+  APP.users[idx].name = document.getElementById('eu-name').value.trim() || APP.users[idx].name;
+  APP.users[idx].role = document.getElementById('eu-role').value;
+  APP.users[idx].active = document.getElementById('eu-active').value === 'true';
+  const newPass = document.getElementById('eu-pass').value;
+  if (newPass.length>=6) APP.users[idx].password = newPass;
+  saveState(); closeModal(); toast('✅ User updated');
+}
+
+function deleteUser(uid) {
+  if (!confirm('Delete this user?')) return;
+  APP.users = APP.users.filter(u=>u.id!==uid);
+  saveState(); closeModal(); toast('User deleted');
+}
+
+function openEditCompany() {
+  const co = APP.company || {};
+  showModal(`
+    <div class="modal-title">🏢 Edit Company</div>
+    <div class="form-group"><label>Business Name</label><input id="co-name" value="${co.name||''}"></div>
+    <div class="form-group"><label>Address</label><input id="co-addr" value="${co.address||''}"></div>
+    <div class="form-group"><label>Phone</label><input id="co-phone" value="${co.phone||''}"></div>
+    <div class="form-group"><label>Email</label><input id="co-email" value="${co.email||''}"></div>
+    <div class="form-group"><label>Tax ID / VAT</label><input id="co-tax" value="${co.taxId||''}"></div>
+    <div class="form-group"><label>Receipt Header</label><input id="co-header" value="${co.receiptHeader||''}"></div>
+    <div class="form-group"><label>Receipt Footer</label><textarea id="co-footer" rows="2">${co.receiptFooter||'Thank you!'}</textarea></div>
+    <div class="form-group"><label>Currency</label><select id="co-currency"><option${(APP.company?.currency||'GMD')==='GMD'?' selected':''} value="GMD">GMD — Gambian Dalasi</option><option${APP.company?.currency==='GHS'?' selected':''} value="GHS">GHS — Ghana Cedi</option><option${APP.company?.currency==='USD'?' selected':''} value="USD">USD — US Dollar</option><option${APP.company?.currency==='EUR'?' selected':''} value="EUR">EUR — Euro</option><option${APP.company?.currency==='GBP'?' selected':''} value="GBP">GBP — British Pound</option><option${APP.company?.currency==='NGN'?' selected':''} value="NGN">NGN — Nigerian Naira</option></select></div>
+    <button class="btn btn-primary" onclick="saveCompany()">Save Changes</button>
+  `);
+}
+
+function saveCompany() {
+  APP.company = {
+    ...APP.company,
+    name: document.getElementById('co-name').value.trim(),
+    address: document.getElementById('co-addr').value.trim(),
+    phone: document.getElementById('co-phone').value.trim(),
+    email: document.getElementById('co-email').value.trim(),
+    taxId: document.getElementById('co-tax').value.trim(),
+    receiptHeader: document.getElementById('co-header').value.trim(),
+    receiptFooter: document.getElementById('co-footer').value.trim(),
+    currency: document.getElementById('co-currency').value,
+  };
+  saveState(); closeModal(); toast('✅ Company updated');
+}
+
+function openPrinterSettings() {
+  showModal(`
+    <div class="modal-title">🖨️ Printer Settings</div>
+    <div style="background:var(--info-light);border-radius:var(--radius-sm);padding:12px;margin-bottom:16px;font-size:13px;color:var(--info);">
+      JuicePOS supports 80mm thermal printers via browser print dialog. For Bluetooth thermal printers, use the system Bluetooth pairing first, then set it as the default printer.
+    </div>
+    <div class="form-group"><label>Receipt Width</label>
+      <select id="pr-width"><option value="80" selected>80mm (Standard)</option><option value="58">58mm (Narrow)</option></select>
+    </div>
+    <div class="toggle-row"><span class="toggle-label">Auto-print after sale</span><div class="toggle" id="autoprint-toggle" onclick="this.classList.toggle('on')"></div></div>
+    <div class="toggle-row"><span class="toggle-label">Print duplicate receipt</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+    <button class="btn btn-secondary" style="margin-top:16px;" onclick="testPrint()">🖨️ Test Print</button>
+  `);
+}
+
+function testPrint() {
+  const w = window.open('','_blank','width=320,height=200');
+  w.document.write(`<html><body style="font-family:monospace;font-size:12px;width:72mm;padding:4mm;"><pre>
+================================
+       TEST RECEIPT
+    ${APP.company?.name||'JUICE BAR'}
+================================
+This is a test print from JuicePOS
+80mm thermal printer test
+
+Thank you!
+================================
+</pre><script>window.onload=()=>{window.print();window.close();}<\/script></body></html>`);
+  w.document.close();
+}
+
+function openDailySummary() {
+  const todaySales = APP.sales.filter(s=>s.date===today());
+  const total = todaySales.reduce((s,x)=>s+x.total,0);
+  const cash = todaySales.reduce((s,x)=>x.payment.method==='cash'?s+x.total:x.payment.method==='split'?s+(x.payment.splitCash||0):s,0);
+  const wave = todaySales.reduce((s,x)=>x.payment.method==='wave'?s+x.total:x.payment.method==='split'?s+(x.payment.splitWave||0):s,0);
+  const bank = todaySales.reduce((s,x)=>x.payment.method==='bank'?s+x.total:x.payment.method==='split'?s+(x.payment.splitBank||0):s,0);
+  const todayExp = APP.expenses.filter(e=>e.date===today()).reduce((s,x)=>s+x.amount,0);
+  const todayDep = APP.deposits.filter(d=>d.date===today()).reduce((s,d)=>s+d.amount,0);
+  const todayCashOut = APP.cashOuts.filter(c=>c.date===today()).reduce((s,c)=>s+c.amount,0);
+  const net = total - todayExp - todayDep - todayCashOut;
+  showModal(`
+    <div class="modal-title">📊 Daily Summary — ${today()}</div>
+    <div class="card" style="margin-bottom:12px;">
+      <div class="card-title">Revenue</div>
+      <div class="summary-row"><span>💵 Cash</span><span>${fmt(cash)}</span></div>
+      <div class="summary-row"><span>📱 Wave</span><span>${fmt(wave)}</span></div>
+      <div class="summary-row"><span>🏦 Bank Transfer</span><span>${fmt(bank)}</span></div>
+      <div class="divider"></div>
+      <div class="summary-row"><strong>Total Sales</strong><span class="summary-total">${fmt(total)}</span></div>
+    </div>
+    <div class="card" style="margin-bottom:12px;">
+      <div class="card-title">Deductions Today</div>
+      <div class="summary-row"><span>📉 Expenses</span><span style="color:var(--danger);">− ${fmt(todayExp)}</span></div>
+      <div class="summary-row"><span>🏦 Bank Deposits</span><span style="color:var(--info);">− ${fmt(todayDep)}</span></div>
+      <div class="summary-row"><span>💸 Cash Outs</span><span style="color:var(--warning);">− ${fmt(todayCashOut)}</span></div>
+      <div class="divider"></div>
+      <div class="summary-row"><strong>Net Today</strong><span class="summary-total" style="color:${net>=0?'var(--success)':'var(--danger)'};">${fmt(net)}</span></div>
+    </div>
+    <div class="card" style="margin-bottom:12px;">
+      <div class="summary-row"><span>Transactions</span><span><strong>${todaySales.length}</strong></span></div>
+      <div class="summary-row"><span>Cash in Drawer</span><span style="font-weight:700;color:var(--warning);">${fmt(Math.max(0, cash - todayCashOut - todayDep))}</span></div>
+    </div>
+    <button class="btn btn-secondary" onclick="printDailySummary()">🖨️ Print Summary</button>
+  `);
+}
+
+function printDailySummary() {
+  const todaySales = APP.sales.filter(s=>s.date===today());
+  const total = todaySales.reduce((s,x)=>s+x.total,0);
+  const w = window.open('','_blank','width=320,height=600');
+  w.document.write(`<html><body style="font-family:monospace;font-size:12px;padding:8mm;"><pre>
+================================
+    DAILY SUMMARY REPORT
+${APP.company?.name||'JUICE BAR'}
+Date: ${today()}
+================================
+Total Transactions: ${todaySales.length}
+Total Revenue: ${APP.company?.currency||'GMD'} ${total.toFixed(2)}
+
+Cash Sales:  ${APP.company?.currency||'GMD'} ${todaySales.filter(s=>s.payment.method==='cash').reduce((s,x)=>s+x.total,0).toFixed(2)}
+Wave Sales:  ${APP.company?.currency||'GMD'} ${todaySales.filter(s=>s.payment.method==='wave').reduce((s,x)=>s+x.total,0).toFixed(2)}
+Bank Trans:  ${APP.company?.currency||'GMD'} ${todaySales.filter(s=>s.payment.method==='bank').reduce((s,x)=>s+x.total,0).toFixed(2)}
+================================
+Printed: ${new Date().toLocaleString()}
+</pre><script>window.onload=()=>{window.print();window.close();}<\/script></body></html>`);
+  w.document.close();
+}
+
+function exportData() {
+  const data = { company: APP.company, users: APP.users.map(u=>({...u,password:'***'})), products: APP.products, sales: APP.sales, expenses: APP.expenses, banks: APP.banks, deposits: APP.deposits, exportDate: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `juicepos-backup-${today()}.json`;
+  a.click();
+  toast('📤 Data exported');
+}
+
+function logout() {
+  if (!confirm('Sign out?')) return;
+  APP.currentUser = null;
+  APP.cart = [];
+  document.getElementById('main-app').classList.add('hidden');
+  document.getElementById('auth-screen').classList.remove('hidden');
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+}
+
+// ===================== PWA =====================
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.style.display = 'flex';
+});
+function installApp() {
+  if (!deferredPrompt) { toast('Use your browser menu → Add to Home Screen'); return; }
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+}
+
+// ===================== BOOT =====================
+(function boot() {
+  loadState();
+  if (!APP.company || !APP.users.length) {
+    // Fresh install
+    document.getElementById('auth-screen').classList.add('hidden');
+    startSetup();
+  }
+  // Allow login on Enter
+  document.getElementById('login-password').addEventListener('keydown', e => { if(e.key==='Enter') handleLogin(); });
+})();
 </script>
-
 </body>
 </html>
