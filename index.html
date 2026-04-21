@@ -7,7 +7,7 @@
 
 <style>
 body { font-family: Arial; margin:0; background:#f4f4f4; }
-header { background:#006400; color:white; padding:15px; text-align:center; font-weight:bold; }
+header { background:#006400; color:white; padding:15px; text-align:center; }
 
 .page { display:none; padding:10px; }
 .page.active { display:block; }
@@ -38,7 +38,12 @@ button { padding:10px; margin:5px 0; }
   display:flex;
   gap:10px;
 }
-.action-bar button { flex:1; }
+
+.total {
+  font-size:20px;
+  font-weight:bold;
+  margin-top:10px;
+}
 </style>
 </head>
 
@@ -48,7 +53,6 @@ button { padding:10px; margin:5px 0; }
 
 <!-- LOGIN -->
 <div id="loginPage" class="page active">
-  <h3>Login</h3>
   <input id="username" placeholder="Username">
   <input id="password" type="password" placeholder="Password">
   <button onclick="login()">Login</button>
@@ -57,19 +61,20 @@ button { padding:10px; margin:5px 0; }
 
 <!-- SETUP -->
 <div id="setupPage" class="page">
-  <h3>Create Admin</h3>
   <input id="newUser" placeholder="Username">
   <input id="newPass" type="password" placeholder="Password">
-  <button onclick="createAdmin()">Create</button>
+  <button onclick="createAdmin()">Create Admin</button>
 </div>
 
 <!-- SELL -->
 <div id="sellPage" class="page">
-  <input id="search" placeholder="Search product..." oninput="searchProduct(this.value)">
+  <input id="search" placeholder="Search..." oninput="searchProduct(this.value)">
   <div id="searchResults"></div>
 
   <h3>Cart</h3>
   <div id="cart"></div>
+
+  <div class="total">Total: GHS <span id="total">0</span></div>
 
   <div class="action-bar">
     <button onclick="clearCart()">Clear</button>
@@ -80,10 +85,9 @@ button { padding:10px; margin:5px 0; }
 
 <!-- STOCK -->
 <div id="stockPage" class="page">
-  <h3>Stock</h3>
   <input id="pname" placeholder="Product">
   <input id="pprice" placeholder="Price">
-  <button onclick="addProduct()">Add Product</button>
+  <button onclick="addProduct()">Add</button>
   <div id="productList"></div>
 </div>
 
@@ -91,6 +95,12 @@ button { padding:10px; margin:5px 0; }
 <div id="salesPage" class="page">
   <h3>Sales</h3>
   <div id="salesList"></div>
+
+  <h3>Daily Report</h3>
+  <div id="report"></div>
+
+  <input id="actualCash" placeholder="Enter physical cash">
+  <button onclick="checkFraud()">Check Cash</button>
 </div>
 
 <!-- NAV -->
@@ -103,146 +113,172 @@ button { padding:10px; margin:5px 0; }
 <script>
 
 // STORAGE
-function save(key,val){ localStorage.setItem(key,JSON.stringify(val)) }
-function load(key){ return JSON.parse(localStorage.getItem(key)) }
+const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v))
+const load=(k)=>JSON.parse(localStorage.getItem(k))
 
 // STATE
-let users = load("users") || []
-let products = load("products") || []
+let users = load("users")||[]
+let products = load("products")||[]
 let cart = []
-let sales = load("sales") || []
-let currentUser = load("session")
+let sales = load("sales")||[]
+let session = load("session")
 
 // AUTO LOGIN
 window.onload = ()=>{
-  if(currentUser){
-    showApp()
-  }
+  if(session) showApp()
 }
 
-// NAVIGATION
-function nav(page){
-  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"))
-  document.getElementById(page).classList.add("active")
+// NAV
+function nav(p){
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"))
+  document.getElementById(p).classList.add("active")
+
+  if(p==="salesPage") renderSales()
 }
 
 // AUTH
 function login(){
-  let u = username.value
-  let p = password.value
-
-  let user = users.find(x=>x.u==u && x.p==p)
+  let u=username.value, p=password.value
+  let user=users.find(x=>x.u==u&&x.p==p)
   if(!user) return alert("Invalid")
 
-  currentUser = user
-  save("session", user)
-
+  session=user
+  save("session",user)
   showApp()
 }
 
-function firstSetup(){
-  nav("setupPage")
-}
+function firstSetup(){ nav("setupPage") }
 
 function createAdmin(){
-  let u = newUser.value
-  let p = newPass.value
-
-  users.push({u,p})
+  users.push({u:newUser.value,p:newPass.value})
   save("users",users)
-
-  alert("Created. Login now")
+  alert("Created")
   nav("loginPage")
 }
 
-// SHOW APP
+// SHOW
 function showApp(){
-  document.getElementById("loginPage").style.display="none"
-  document.getElementById("setupPage").style.display="none"
-  document.getElementById("sellPage").classList.add("active")
-
+  loginPage.style.display="none"
+  setupPage.style.display="none"
+  nav("sellPage")
   renderProducts()
-  renderCart()
 }
 
 // PRODUCTS
 function addProduct(){
-  let p = {
-    id: Date.now(),
-    name: pname.value,
-    price: parseFloat(pprice.value)
-  }
-
-  products.push(p)
+  products.push({
+    id:Date.now(),
+    name:pname.value,
+    price:+pprice.value
+  })
   save("products",products)
-
   renderProducts()
 }
 
 function renderProducts(){
-  productList.innerHTML = products.map(p=>`
+  productList.innerHTML=products.map(p=>`
     <div>${p.name} - ${p.price}</div>
   `).join("")
 }
 
-// SEARCH + SELL
+// SEARCH
 function searchProduct(q){
-  let result = products.filter(p=>p.name.toLowerCase().includes(q.toLowerCase()))
-
-  searchResults.innerHTML = result.map(p=>`
+  let r=products.filter(p=>p.name.toLowerCase().includes(q.toLowerCase()))
+  searchResults.innerHTML=r.map(p=>`
     <div onclick="addToCart(${p.id})">${p.name} - ${p.price}</div>
   `).join("")
 }
 
+// CART
 function addToCart(id){
-  let p = products.find(x=>x.id==id)
-
-  let existing = cart.find(c=>c.id==id)
-  if(existing) existing.qty++
-  else cart.push({...p, qty:1})
-
+  let p=products.find(x=>x.id==id)
+  let e=cart.find(c=>c.id==id)
+  e?e.qty++:cart.push({...p,qty:1})
   renderCart()
 }
 
 function renderCart(){
-  cartEl = document.getElementById("cart")
-
-  cartEl.innerHTML = cart.map(c=>`
+  cart.innerHTML=cart.map(c=>`
     <div class="cart-item">
       ${c.name} x${c.qty}
-      <span>${c.price * c.qty}</span>
+      <span>${c.qty*c.price}</span>
     </div>
   `).join("")
+
+  total.innerText=cart.reduce((s,i)=>s+i.qty*i.price,0)
 }
 
 // ACTIONS
-function clearCart(){
-  cart=[]
-  renderCart()
-}
+function clearCart(){ cart=[]; renderCart() }
 
 function charge(){
   if(!cart.length) return alert("Empty")
 
-  sales.push({items:cart, date:new Date()})
+  let sale={
+    items:cart,
+    total:cart.reduce((s,i)=>s+i.qty*i.price,0),
+    user:session.u,
+    date:new Date()
+  }
+
+  sales.push(sale)
   save("sales",sales)
+
+  generateReceipt(sale)
 
   cart=[]
   renderCart()
-  renderSales()
-
-  alert("Sale complete")
 }
 
-function cashOut(){
-  alert("Cash out recorded")
+// WHATSAPP RECEIPT
+function generateReceipt(sale){
+  let text=`Receipt\n\n`
+  sale.items.forEach(i=>{
+    text+=`${i.name} x${i.qty} = ${i.qty*i.price}\n`
+  })
+  text+=`\nTotal: ${sale.total}`
+
+  let url="https://wa.me/?text="+encodeURIComponent(text)
+  window.open(url)
 }
 
-// SALES
+// SALES + REPORT
 function renderSales(){
-  salesList.innerHTML = sales.map(s=>`
-    <div>${s.items.length} items - ${new Date(s.date).toLocaleString()}</div>
+  salesList.innerHTML=sales.map(s=>`
+    <div>${s.user} - ${s.total}</div>
   `).join("")
+
+  let today=new Date().toDateString()
+
+  let userSales=sales.filter(s=>
+    new Date(s.date).toDateString()==today &&
+    s.user==session.u
+  )
+
+  let total=userSales.reduce((s,i)=>s+i.total,0)
+
+  report.innerHTML=`Today Total: ${total}`
+}
+
+// FRAUD CHECK
+function checkFraud(){
+  let actual=+actualCash.value
+
+  let today=new Date().toDateString()
+  let expected=sales
+    .filter(s=>new Date(s.date).toDateString()==today)
+    .reduce((s,i)=>s+i.total,0)
+
+  if(actual!==expected){
+    alert("⚠️ Mismatch! Expected: "+expected+" Got: "+actual)
+  } else {
+    alert("Cash OK")
+  }
+}
+
+// CASH OUT
+function cashOut(){
+  alert("Cash removed recorded")
 }
 
 </script>
