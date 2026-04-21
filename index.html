@@ -2,100 +2,114 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>JuicePOS</title>
 
 <style>
-:root {
+:root{
   --primary:#006400;
-  --bg:#f0f4f0;
-  --surface:#ffffff;
-  --border:#d0e0d0;
-  --text:#1a2e1a;
+  --primary-dark:#004d00;
   --danger:#c0392b;
+  --danger-light:#fadbd8;
   --warning:#e67e22;
-  --radius:12px;
-  --tab-h:56px;
+  --warning-light:#fdebd0;
+  --bg:#f4f6f4;
 }
+body{margin:0;font-family:Arial;background:var(--bg);}
 
-body {
-  margin:0;
-  font-family:system-ui;
-  background:var(--bg);
-}
-
-/* ===== FIXED ACTION BAR (UPDATED) ===== */
-#sell-action-bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-
-  /* PUSHED HIGHER */
-  bottom: calc(var(--tab-h) + 18px);
-
-  background: var(--surface);
-  border-top: 2px solid var(--primary);
-
-  padding: 10px 12px;
-
-  z-index: 200;
-  box-shadow: 0 -6px 16px rgba(0,0,0,0.12);
-}
-
-/* ===== ENSURE NAV BELOW ===== */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: var(--tab-h);
-  background: white;
-  border-top: 1px solid var(--border);
-  display:flex;
-  z-index:100;
-}
-
-/* ===== OPTIONAL SMALL SCREEN BOOST ===== */
-@media (max-height:700px){
-  #sell-action-bar{
-    bottom: calc(var(--tab-h) + 24px);
-  }
-}
-
-button{
-  border:none;
-  border-radius:8px;
+#sell-action-bar{
+  position:fixed;
+  bottom:70px;
+  left:0;
+  right:0;
+  background:white;
   padding:10px;
+  border-top:2px solid var(--primary);
+}
+
+/* 🔥 NEW BUTTON LAYOUT */
+.action-buttons{
+  display:flex;
+  gap:10px;
+}
+
+.action-buttons button{
+  border:none;
+  border-radius:10px;
   font-weight:bold;
 }
 
-/* DEMO BUTTON STYLE */
-.btn-danger{background:#fadbd8;color:#c0392b;}
-.btn-warning{background:#fdebd0;color:#e67e22;}
-.btn-primary{background:#006400;color:#fff;}
+/* Individual buttons */
+.clear-btn{
+  width:50px;
+  height:50px;
+  background:var(--danger-light);
+  color:var(--danger);
+  font-size:20px;
+}
 
+.cashout-btn{
+  padding:0 16px;
+  background:var(--warning-light);
+  color:var(--warning);
+  border:2px solid var(--warning);
+}
+
+.charge-btn{
+  flex:1;
+  height:55px;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  color:white;
+  font-size:16px;
+  transform:translateY(-8px); /* 🔥 lifted */
+}
 </style>
 </head>
 
 <body>
 
-<!-- SELL ACTION BAR -->
-<div id="sell-action-bar">
-  <div style="display:flex;gap:8px;">
-    <button class="btn-danger">🗑</button>
-    <button class="btn-warning">💸 Cash Out</button>
-    <button class="btn-primary" style="flex:1;">✅ Charge</button>
+<!-- SELL PAGE ONLY (rest of your app remains same logic) -->
+<div id="page-sell">
+
+  <!-- CART AREA -->
+  <div id="cart" style="padding:20px;">
+    Cart Items Appear Here
   </div>
+
+  <!-- ACTION BAR -->
+  <div id="sell-action-bar">
+
+    <div class="action-buttons">
+
+      <button class="clear-btn" onclick="clearCart()">🗑</button>
+
+      <button class="cashout-btn" onclick="openCashOut()">
+        💸 Cash Out
+      </button>
+
+      <button class="charge-btn" onclick="openCartPayment()">
+        ✅ Charge
+      </button>
+
+    </div>
+
+  </div>
+
 </div>
 
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <div style="flex:1;text-align:center;">Sell</div>
-  <div style="flex:1;text-align:center;">Stock</div>
-  <div style="flex:1;text-align:center;">Sales</div>
-  <div style="flex:1;text-align:center;">Banking</div>
-  <div style="flex:1;text-align:center;">More</div>
-</div>
+<script>
+function clearCart(){
+  alert("Cart cleared");
+}
+
+function openCashOut(){
+  alert("Cash out opened");
+}
+
+function openCartPayment(){
+  alert("Charge triggered");
+}
+</script>
 
 </body>
 </html>
