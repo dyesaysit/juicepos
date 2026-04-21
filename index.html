@@ -2,297 +2,100 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JuicePOS Enterprise</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>JuicePOS</title>
 
 <style>
-body { font-family: Arial; margin:0; background:#f4f4f4; }
-header { background:#006400; color:white; padding:15px; text-align:center; }
+:root {
+  --primary:#006400;
+  --bg:#f0f4f0;
+  --surface:#ffffff;
+  --border:#d0e0d0;
+  --text:#1a2e1a;
+  --danger:#c0392b;
+  --warning:#e67e22;
+  --radius:12px;
+  --tab-h:56px;
+}
 
-.page { display:none; padding:10px; }
-.page.active { display:block; }
+body {
+  margin:0;
+  font-family:system-ui;
+  background:var(--bg);
+}
 
+/* ===== FIXED ACTION BAR (UPDATED) ===== */
+#sell-action-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+
+  /* PUSHED HIGHER */
+  bottom: calc(var(--tab-h) + 18px);
+
+  background: var(--surface);
+  border-top: 2px solid var(--primary);
+
+  padding: 10px 12px;
+
+  z-index: 200;
+  box-shadow: 0 -6px 16px rgba(0,0,0,0.12);
+}
+
+/* ===== ENSURE NAV BELOW ===== */
 .bottom-nav {
-  position:fixed; bottom:0; left:0; right:0;
-  display:flex; background:white; border-top:1px solid #ccc;
-}
-.bottom-nav button {
-  flex:1; padding:10px; border:none; background:none;
-}
-.bottom-nav button.active { color:green; font-weight:bold; }
-
-input { padding:10px; width:100%; margin:5px 0; }
-button { padding:10px; margin:5px 0; }
-
-.cart-item {
-  display:flex; justify-content:space-between;
-  padding:8px; background:white; margin-bottom:5px;
-}
-
-.action-bar {
-  position:fixed;
-  bottom:60px;
-  left:0; right:0;
-  background:white;
-  padding:10px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--tab-h);
+  background: white;
+  border-top: 1px solid var(--border);
   display:flex;
-  gap:10px;
+  z-index:100;
 }
 
-.total { font-size:20px; font-weight:bold; margin-top:10px; }
+/* ===== OPTIONAL SMALL SCREEN BOOST ===== */
+@media (max-height:700px){
+  #sell-action-bar{
+    bottom: calc(var(--tab-h) + 24px);
+  }
+}
+
+button{
+  border:none;
+  border-radius:8px;
+  padding:10px;
+  font-weight:bold;
+}
+
+/* DEMO BUTTON STYLE */
+.btn-danger{background:#fadbd8;color:#c0392b;}
+.btn-warning{background:#fdebd0;color:#e67e22;}
+.btn-primary{background:#006400;color:#fff;}
+
 </style>
 </head>
 
 <body>
 
-<header>JuicePOS Enterprise (GMD)</header>
-
-<!-- LOGIN -->
-<div id="loginPage" class="page active">
-  <input id="username" placeholder="Username">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="login()">Login</button>
-  <button onclick="firstSetup()">First Setup</button>
-</div>
-
-<!-- SETUP -->
-<div id="setupPage" class="page">
-  <input id="newUser" placeholder="Admin Username">
-  <input id="newPass" type="password" placeholder="Password">
-  <button onclick="createAdmin()">Create Admin</button>
-</div>
-
-<!-- SELL -->
-<div id="sellPage" class="page">
-  <input id="search" placeholder="Search product..." oninput="searchProduct(this.value)">
-  <div id="searchResults"></div>
-
-  <h3>Cart</h3>
-  <div id="cart"></div>
-
-  <div class="total">Total: GMD <span id="total">0</span></div>
-
-  <div class="action-bar">
-    <button onclick="clearCart()">Clear</button>
-    <button onclick="cashOut()">Cash Out</button>
-    <button onclick="charge()">Charge</button>
+<!-- SELL ACTION BAR -->
+<div id="sell-action-bar">
+  <div style="display:flex;gap:8px;">
+    <button class="btn-danger">🗑</button>
+    <button class="btn-warning">💸 Cash Out</button>
+    <button class="btn-primary" style="flex:1;">✅ Charge</button>
   </div>
 </div>
 
-<!-- STOCK -->
-<div id="stockPage" class="page">
-  <h3>Add Product</h3>
-  <input id="pname" placeholder="Product">
-  <input id="pprice" placeholder="Price">
-  <input id="pqty" placeholder="Quantity">
-  <button onclick="addProduct()">Add</button>
-
-  <h3>Inventory</h3>
-  <div id="productList"></div>
-</div>
-
-<!-- SALES -->
-<div id="salesPage" class="page">
-  <h3>Sales</h3>
-  <div id="salesList"></div>
-
-  <h3>Daily Report</h3>
-  <div id="report"></div>
-
-  <input id="actualCash" placeholder="Enter physical cash">
-  <button onclick="checkFraud()">Check Cash</button>
-</div>
-
-<!-- NAV -->
+<!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <button onclick="nav('sellPage')">Sell</button>
-  <button onclick="nav('stockPage')">Stock</button>
-  <button onclick="nav('salesPage')">Sales</button>
+  <div style="flex:1;text-align:center;">Sell</div>
+  <div style="flex:1;text-align:center;">Stock</div>
+  <div style="flex:1;text-align:center;">Sales</div>
+  <div style="flex:1;text-align:center;">Banking</div>
+  <div style="flex:1;text-align:center;">More</div>
 </div>
-
-<script>
-
-// STORAGE
-const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v))
-const load=(k)=>JSON.parse(localStorage.getItem(k))
-
-// STATE
-let users = load("users")||[]
-let products = load("products")||[]
-let cart = []
-let sales = load("sales")||[]
-let session = load("session")
-
-// INIT
-window.onload = ()=>{
-  if(session) showApp()
-}
-
-// NAV
-function nav(p){
-  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"))
-  document.getElementById(p).classList.add("active")
-  if(p==="salesPage") renderSales()
-}
-
-// AUTH
-function login(){
-  let user=users.find(x=>x.u==username.value && x.p==password.value)
-  if(!user) return alert("Invalid login")
-
-  session=user
-  save("session",user)
-  showApp()
-}
-
-function firstSetup(){ nav("setupPage") }
-
-function createAdmin(){
-  users.push({u:newUser.value,p:newPass.value,role:"admin"})
-  save("users",users)
-  alert("Admin created")
-  nav("loginPage")
-}
-
-// SHOW
-function showApp(){
-  loginPage.style.display="none"
-  setupPage.style.display="none"
-  nav("sellPage")
-  renderProducts()
-}
-
-// PRODUCTS
-function addProduct(){
-  products.push({
-    id:Date.now(),
-    name:pname.value,
-    price:+pprice.value,
-    qty:+pqty.value
-  })
-  save("products",products)
-  renderProducts()
-}
-
-function renderProducts(){
-  productList.innerHTML=products.map(p=>`
-    <div>${p.name} - GMD ${p.price} (Stock: ${p.qty})</div>
-  `).join("")
-}
-
-// SEARCH
-function searchProduct(q){
-  let r=products.filter(p=>p.name.toLowerCase().includes(q.toLowerCase()))
-  searchResults.innerHTML=r.map(p=>`
-    <div onclick="addToCart(${p.id})">
-      ${p.name} - GMD ${p.price} (${p.qty} left)
-    </div>
-  `).join("")
-}
-
-// CART
-function addToCart(id){
-  let p=products.find(x=>x.id==id)
-  if(p.qty<=0) return alert("Out of stock")
-
-  let e=cart.find(c=>c.id==id)
-  e?e.qty++:cart.push({...p,qty:1})
-
-  renderCart()
-}
-
-function renderCart(){
-  cart.innerHTML=cart.map(c=>`
-    <div class="cart-item">
-      ${c.name} x${c.qty}
-      <span>${c.qty*c.price}</span>
-    </div>
-  `).join("")
-
-  total.innerText=cart.reduce((s,i)=>s+i.qty*i.price,0)
-}
-
-// ACTIONS
-function clearCart(){ cart=[]; renderCart() }
-
-function charge(){
-  if(!cart.length) return alert("Empty cart")
-
-  let totalAmount=cart.reduce((s,i)=>s+i.qty*i.price,0)
-
-  // deduct stock
-  cart.forEach(c=>{
-    let p=products.find(x=>x.id==c.id)
-    p.qty-=c.qty
-  })
-
-  save("products",products)
-
-  let sale={
-    items:cart,
-    total:totalAmount,
-    user:session.u,
-    date:new Date()
-  }
-
-  sales.push(sale)
-  save("sales",sales)
-
-  generateReceipt(sale)
-
-  cart=[]
-  renderCart()
-  renderProducts()
-}
-
-// RECEIPT
-function generateReceipt(sale){
-  let text=`JuicePOS Receipt\n\n`
-  sale.items.forEach(i=>{
-    text+=`${i.name} x${i.qty} = GMD ${i.qty*i.price}\n`
-  })
-  text+=`\nTotal: GMD ${sale.total}`
-
-  window.open("https://wa.me/?text="+encodeURIComponent(text))
-}
-
-// SALES + REPORT
-function renderSales(){
-  salesList.innerHTML=sales.map(s=>`
-    <div>${s.user} - GMD ${s.total}</div>
-  `).join("")
-
-  let today=new Date().toDateString()
-
-  let todaySales=sales.filter(s=>new Date(s.date).toDateString()==today)
-
-  let total=todaySales.reduce((s,i)=>s+i.total,0)
-
-  report.innerHTML=`Today Total: GMD ${total}`
-}
-
-// FRAUD
-function checkFraud(){
-  let actual=+actualCash.value
-  let today=new Date().toDateString()
-
-  let expected=sales
-    .filter(s=>new Date(s.date).toDateString()==today)
-    .reduce((s,i)=>s+i.total,0)
-
-  if(actual!==expected){
-    alert(`⚠️ Mismatch! Expected GMD ${expected}, Got GMD ${actual}`)
-  } else {
-    alert("Cash Balanced")
-  }
-}
-
-// CASH OUT
-function cashOut(){
-  alert("Cash out recorded")
-}
-
-</script>
 
 </body>
 </html>
