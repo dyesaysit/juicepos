@@ -1,0 +1,9 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // VBL JuicePOS data — allow read/write from the web app
+    match /vbl_data/{document} {
+      allow read, write: if true;
+    }
+  }
+}
